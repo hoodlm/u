@@ -1,0 +1,17 @@
+<line> ::= <statement> | <function_decl>
+
+<function_decl> ::= "fn" <function_label>":" <unary_chain>;
+<statement> ::= <source> <unary_chain> <sink>;
+
+<source> ::= <variable_label> | <literal>
+<sink> ::= <variable_label> | "STDOUT"
+
+<unary_chain> ::= <unary_op> | <unary_op> <unary_chain>
+
+<unary_invoke> ::= <unary_op> | {int}<unary_op>
+<unary_op> ::= + | -
+
+<literal> ::= int
+<variable_label> ::= /(:alnum:|:punct:)+/
+<function_label> ::= /(:alnum:|:punct:)+/
+
