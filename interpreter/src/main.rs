@@ -1,14 +1,22 @@
 use std::env;
 use std::fs;
 
+use regex::Regex;
+
 fn main() {
+    println!("\n==== u ====");
     let filename = infile_from_args();
     let input = fs::read_to_string(&filename).unwrap();
 
+    println!("Interpreting {}", filename);
+    println!("{}", input);
+    println!("...");
+
     let tokens = lex_analysis(&input);
 
-    println!("{}", input);
-    println!("{:?}", tokens);
+    tokens.iter().for_each(|t| {
+        println!("{:?}", t);
+    });
 }
 
 fn infile_from_args() -> String {
@@ -21,6 +29,9 @@ fn infile_from_args() -> String {
 
 #[derive(Debug, PartialEq)]
 enum TokenName {
+    Integer,
+    Plus,
+    Stdout,
     Unknown,
 }
 
@@ -46,9 +57,14 @@ fn lex_analysis(input: &String) -> Vec<Token> {
     }
 }
 
-fn to_token(token_value_raw: &str) -> Token {
-    return Token {
-        name: TokenName::Unknown,
-        value: Some(token_value_raw.to_string())
+fn to_token(t: &str) -> Token {
+    let int_regex = Regex::new(r"[0-9]+").unwrap();
+
+    let (name, value) = match t {
+        t if int_regex.is_match(t) => (TokenName::Integer, Some(t.to_string())),
+        "+" => (TokenName::Plus, None),
+        "STDOUT" => (TokenName::Stdout, None),
+        _ => (TokenName::Unknown, Some(t.to_string())),
     };
+    return Token { name, value };
 }
