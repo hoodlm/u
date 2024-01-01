@@ -72,7 +72,6 @@ impl SyntaxParser {
     fn get_next_line_or_end_program(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) {
         match token {
             None => {
-                println!("End of file; moving parser to Complete state");
                 self.state = SyntaxParserState::Complete;
             },
             Some(token) => self.start_next_line(token, tree),
@@ -84,15 +83,9 @@ impl SyntaxParser {
             TokenName::Integer => {
                 self.statement_count = tree.add_child(SyntaxTreeKind::Statement, None);
                 tree.children[self.statement_count].add_child(SyntaxTreeKind::Source, Some(token.clone()));
-                println!(
-                    "Started new Statement {} with Source node for integer value {:?}",
-                    self.statement_count,
-                    token.value,
-                );
-                println!("Transition state to BuildingStatement");
                 self.state = SyntaxParserState::BuildingStatement;
             }
-            _ => println!("NOOP for {:?}", token),
+            _ => {} /* noop */,
         }
     }
 
@@ -107,12 +100,9 @@ impl SyntaxParser {
         match token.name {
             TokenName::Plus => {
                     tree.children[self.statement_count].add_child(SyntaxTreeKind::UnaryOp, Some(token.clone()));
-                    println!("Appended UnaryOp node for token {:?} to statement {}", token.name, self.statement_count);
             },
             TokenName::Stdout => {
                     tree.children[self.statement_count].add_child(SyntaxTreeKind::Sink, Some(token.clone()));
-                    println!("Appended Sink node for token {:?} to statement {}", token.name, self.statement_count);
-                    println!("Statement complete; Transition state to GetNextLine");
                     self.state = SyntaxParserState::GetNextLine;
             },
             _ => {
