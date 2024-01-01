@@ -50,6 +50,16 @@ fn rot13: {13} +;
 --> "uryyb jbeyq"
 ```
 
+# Testing
+
+`u` comes with a language integration test suite in the [spec](./spec) directory.
+
+The language integration tests are built with [shellspec](shellspec.info) and can be invoked
+with the plain `shellspec` command.
+
+They execute directly against the `u` binary, so you need to build the interpreter (e.g.
+with `cargo build --release`) first to run the tests.
+
 # FAQ
 
 ## Is `u` a real language?
