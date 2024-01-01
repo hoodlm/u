@@ -1,7 +1,7 @@
 use crate::lex::{Token, TokenName};
 
 #[derive(Debug, PartialEq, Clone)]
-enum SyntaxTreeKind {
+pub enum SyntaxTreeKind {
     ProgramStart,
     Statement,
     Source,
@@ -11,9 +11,9 @@ enum SyntaxTreeKind {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct SyntaxTree {
-    kind: SyntaxTreeKind,
-    children: Vec<SyntaxTree>,
-    token: Option<Token>,
+    pub kind: SyntaxTreeKind,
+    pub children: Vec<SyntaxTree>,
+    pub token: Option<Token>,
 }
 
 impl SyntaxTree {
