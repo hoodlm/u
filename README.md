@@ -1,9 +1,12 @@
-`u` is a functional programming language that only supports unary operations - functions that
+`u` is a functional programming language that supports only unary operations - functions that
 take a single variable and return a single variable of the same type.
 
-A `u` statement is read left-to-right, composed of the following:
+This repo contains a language specification and an interpretter.
 
-## Examples:
+* The language specification is a work-in-progress and subject to change.
+* The interpreter is incomplete and a messy pile of spaghetti, but it's getting better.
+
+## Language Examples:
 
 Assign the literal value '2' to the variable 'y':
 
@@ -24,7 +27,7 @@ y + + + x;
 An equivalent, using `{n}` syntactic sugar to repeat the increment (+) operator three times:
 
 ```
-y {3}+ x;
+y {3} + x;
 
 --> 5
 ```
@@ -32,7 +35,7 @@ y {3}+ x;
 ROT13 cipher:
 
 ```
-"hello world" {13}+ PRINTLN;
+"hello world" {13} + PRINTLN;
 
 --> "uryyb jbeyq"
 ```
@@ -40,20 +43,22 @@ ROT13 cipher:
 Function declaration:
 
 ```
-fn rot13: {13}+;
+fn rot13: {13} +;
 
 "hello world" rot13 PRINTLN;
 
 --> "uryyb jbeyq"
 ```
 
-## Supported datatypes
+# FAQ
 
-`u` currently supports integers and chars, as well as integer arrays and char arrays (or strings).
+## Is `u` a real language?
 
-Type coercion and conversion isn't supported.
+Yes.
 
-## Other semantics
+## Can I write real software with `u`?
 
-* Variable and function assignments are immutable and assign-once
+Yes, you can use `u` to implement any program that can be expressed as a
+series of unary operations. If you find unary operators limiting, consider
+that a flaw with the underlying laws of universe, not a flaw with `u`.
 

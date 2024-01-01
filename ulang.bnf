@@ -8,7 +8,8 @@
 
 <unary_chain> ::= <unary_op> | <unary_op> <unary_chain>
 
-<unary_invoke> ::= <unary_op> | {int}<unary_op>
+<unary_invoke> ::= <unary_op> | <repeater> <unary_op>
+<repeater> ::= {int}
 <unary_op> ::= + | -
 
 <literal> ::= int
