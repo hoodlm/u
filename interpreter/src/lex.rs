@@ -5,6 +5,7 @@ pub enum TokenName {
     ProgramStart,
     Integer,
     Plus,
+    Minus,
     Stdout,
     Unknown,
 }
@@ -38,6 +39,7 @@ fn to_token(t: &str) -> Token {
     let (name, value) = match t {
         t if int_regex.is_match(t) => (TokenName::Integer, Some(t.to_string())),
         "+" => (TokenName::Plus, None),
+        "-" => (TokenName::Minus, None),
         "STDOUT" => (TokenName::Stdout, None),
         _ => (TokenName::Unknown, Some(t.to_string())),
     };

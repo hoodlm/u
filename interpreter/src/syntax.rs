@@ -98,7 +98,7 @@ impl SyntaxParser {
 
     fn append_to_statement_concrete(&mut self, token: &Token, tree: &mut SyntaxTree) {
         match token.name {
-            TokenName::Plus => {
+            TokenName::Plus | TokenName::Minus => {
                     tree.children[self.statement_count].add_child(SyntaxTreeKind::UnaryOp, Some(token.clone()));
             },
             TokenName::Stdout => {
@@ -106,7 +106,7 @@ impl SyntaxParser {
                     self.state = SyntaxParserState::GetNextLine;
             },
             _ => {
-                    panic!("Unexpected token!");
+                    panic!("Unexpected token {:?}!", token);
             },
         }
     }

@@ -94,7 +94,10 @@ fn apply_operator(input: i64, operator: &SyntaxTree) -> i64 {
             match t.name {
                 TokenName::Plus => {
                     return input + 1;
-                }
+                },
+                TokenName::Minus => {
+                    return input - 1;
+                },
                 _ => {
                     panic!("Unexpected token in UnaryOp node: {:?}", t);
                 }
