@@ -80,12 +80,12 @@ impl SyntaxParser {
 
     fn start_next_line(&mut self, token: &Token, tree: &mut SyntaxTree) {
         match token.name {
-            TokenName::Integer => {
+            TokenName::Integer | TokenName::Float => {
                 self.statement_count = tree.add_child(SyntaxTreeKind::Statement, None);
                 tree.children[self.statement_count].add_child(SyntaxTreeKind::Source, Some(token.clone()));
                 self.state = SyntaxParserState::BuildingStatement;
             }
-            _ => {} /* noop */,
+            _ => panic!("Unexpected token at start_next_line: {:?}", token),
         }
     }
 

@@ -3,6 +3,7 @@ use regex::Regex;
 #[derive(Debug, PartialEq, Clone)]
 pub enum TokenName {
     ProgramStart,
+    Float,
     Integer,
     Plus,
     Minus,
@@ -34,9 +35,11 @@ pub fn lex_analysis(input: &String) -> Vec<Token> {
 }
 
 fn to_token(t: &str) -> Token {
+    let float_regex = Regex::new(r"[0-9]+\.[0-9]+").unwrap();
     let int_regex = Regex::new(r"[0-9]+").unwrap();
 
     let (name, value) = match t {
+        t if float_regex.is_match(t) => (TokenName::Float, Some(t.to_string())),
         t if int_regex.is_match(t) => (TokenName::Integer, Some(t.to_string())),
         "+" => (TokenName::Plus, None),
         "-" => (TokenName::Minus, None),

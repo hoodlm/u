@@ -1,5 +1,42 @@
 use crate::syntax::{SyntaxTree, SyntaxTreeKind};
 use crate::lex::{TokenName};
+use std::fmt::{Formatter, Display};
+use std::ops::{Add, Sub};
+
+#[derive(Debug, Clone)]
+enum UValue {
+    Integer(i64),
+    Float(f64),
+}
+
+impl Display for UValue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UValue::Integer(int) => write!(f, "{}", int),
+            UValue::Float(float) => write!(f, "{}", float),
+        }
+    }
+}
+
+impl Add<i32> for &UValue {
+    type Output = UValue;
+    fn add(self, other: i32) -> Self::Output {
+        match self {
+            UValue::Integer(int) => UValue::Integer(int + other as i64),
+            UValue::Float(float) => UValue::Float(float + other as f64),
+        }
+    }
+}
+
+impl Sub<i32> for &UValue {
+    type Output = UValue;
+    fn sub(self, other: i32) -> Self::Output {
+        match self {
+            UValue::Integer(int) => UValue::Integer(int - other as i64),
+            UValue::Float(float) => UValue::Float(float - other as f64),
+        }
+    }
+}
 
 pub fn execute(program: &SyntaxTree) {
     assert!(
@@ -31,7 +68,7 @@ fn exec_statement(statement: &SyntaxTree) {
 
     operators.iter().for_each(|item| match &item.kind {
         _ => {
-            result = apply_operator(result, item);
+            result = apply_operator(&result, item);
         }
     });
 
@@ -62,7 +99,7 @@ fn prevalidate_statement(statement: &SyntaxTree) -> (&SyntaxTree, &SyntaxTree) {
     return (source, sink);
 }
 
-fn get_source_value(source_node: &SyntaxTree) -> i64 {
+fn get_source_value(source_node: &SyntaxTree) -> UValue {
     assert!(
         source_node.kind == SyntaxTreeKind::Source,
         "SyntaxTree passed to get_source_value must be of type Source"
@@ -73,8 +110,12 @@ fn get_source_value(source_node: &SyntaxTree) -> i64 {
             match t.name {
                 TokenName::Integer => {
                     let val: i64 = t.value.clone().unwrap().parse().expect("Malformed integer value");
-                    return val;
-                }
+                    return UValue::Integer(val);
+                },
+                TokenName::Float => {
+                    let val: f64 = t.value.clone().unwrap().parse().expect("Malformed float value");
+                    return UValue::Float(val);
+                },
                 _ => {
                     panic!("Unexpected token in Source node: {:?}", t);
                 }
@@ -83,7 +124,7 @@ fn get_source_value(source_node: &SyntaxTree) -> i64 {
     };
 }
 
-fn apply_operator(input: i64, operator: &SyntaxTree) -> i64 {
+fn apply_operator(input: &UValue, operator: &SyntaxTree) -> UValue {
     assert!(
         operator.kind == SyntaxTreeKind::UnaryOp,
         "SyntaxTree passed to get_source_value must be of type UnaryOp"
@@ -106,7 +147,7 @@ fn apply_operator(input: i64, operator: &SyntaxTree) -> i64 {
     };
 }
 
-fn apply_result_to_sink(result: i64, sink: &SyntaxTree) {
+fn apply_result_to_sink(result: UValue, sink: &SyntaxTree) {
     assert!(
         sink.kind == SyntaxTreeKind::Sink,
         "SyntaxTree passed to get_source_value must be of type Sink"
