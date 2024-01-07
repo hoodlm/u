@@ -1,24 +1,25 @@
 spec_helper_configure() {
-    before_all ensure_u_on_path
+    set_u_binary
     before_each setup_tmp_program_file
 }
 
-ensure_u_on_path() {
-    command -v u || find_u
+set_u_binary() {
+    if [ -n "$U_INTERPRETER" ]; then
+        echo "U_INTERPRETER set: $U_INTERPRETER"
+    else
+        echo "U_INTERPRETER ENV variable not set, looking for an interpreter"
+        U_INTERPRETER=$(command -v u || find_u)
+        echo "Found: $U_INTERPRETER"
+    fi
 }
 
 find_u() {
-    echo "u is not on PATH, looking for it..."
     find_result=$(find . -name "u" -type f | head -n1)
     if [ -z "$find_result" ]; then
         echo "Could not find 'u' executable"
         exit 1
     fi
-    printf "Found interpreter: %s\n" "$find_result"
-    u_dir=$(dirname "${find_result}")
-    printf "Adding '%s' to PATH\n" "$u_dir"
-
-    PATH="$PATH:$u_dir"
+    printf "%s" "$find_result"
 }
 
 setup_tmp_program_file() {
