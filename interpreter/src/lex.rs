@@ -5,6 +5,7 @@ pub enum TokenName {
     ProgramStart,
     Float,
     Integer,
+    Letter,
     Plus,
     Minus,
     Stdout,
@@ -37,6 +38,7 @@ pub fn lex_analysis(input: &String) -> Vec<Token> {
 fn to_token(t: &str) -> Token {
     let float_regex = Regex::new(r"[0-9]+\.[0-9]+").unwrap();
     let int_regex = Regex::new(r"[0-9]+").unwrap();
+    let letter_regex = Regex::new(r"[a-z|A-Z]").unwrap();
 
     let (name, value) = match t {
         t if float_regex.is_match(t) => (TokenName::Float, Some(t.to_string())),
@@ -44,6 +46,7 @@ fn to_token(t: &str) -> Token {
         "+" => (TokenName::Plus, None),
         "-" => (TokenName::Minus, None),
         "STDOUT" => (TokenName::Stdout, None),
+        t if letter_regex.is_match(t) => (TokenName::Letter, Some(t.to_string())),
         _ => (TokenName::Unknown, Some(t.to_string())),
     };
     return Token { name, value };

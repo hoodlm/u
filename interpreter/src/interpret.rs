@@ -2,11 +2,13 @@ use crate::syntax::{SyntaxTree, SyntaxTreeKind};
 use crate::lex::{TokenName};
 use std::fmt::{Formatter, Display};
 use std::ops::{Add, Sub};
+use std::char::from_digit;
 
 #[derive(Debug, Clone)]
 enum UValue {
     Integer(i64),
     Float(f64),
+    Letter(char),
 }
 
 impl Display for UValue {
@@ -14,6 +16,7 @@ impl Display for UValue {
         match self {
             UValue::Integer(int) => write!(f, "{}", int),
             UValue::Float(float) => write!(f, "{}", float),
+            UValue::Letter(c) => write!(f, "{}", c),
         }
     }
 }
@@ -24,6 +27,15 @@ impl Add<i32> for &UValue {
         match self {
             UValue::Integer(int) => UValue::Integer(int + other as i64),
             UValue::Float(float) => UValue::Float(float + other as f64),
+            UValue::Letter(c) => {
+                let n = c.to_digit(36).unwrap() - 10;
+                let incremented = (n + other as u32) % 26;
+                let mut result_char = from_digit(incremented + 10, 36).unwrap();
+                if c.is_ascii_uppercase() {
+                    result_char = result_char.to_ascii_uppercase();
+                }
+                UValue::Letter(result_char)
+            },
         }
     }
 }
@@ -34,6 +46,15 @@ impl Sub<i32> for &UValue {
         match self {
             UValue::Integer(int) => UValue::Integer(int - other as i64),
             UValue::Float(float) => UValue::Float(float - other as f64),
+            UValue::Letter(c) => {
+                let n: i32 = (c.to_digit(36).unwrap() - 10).try_into().unwrap();
+                let decremented = (n - other).rem_euclid(26) + 10;
+                let mut result_char = from_digit(decremented.try_into().unwrap(), 36).unwrap();
+                if c.is_ascii_uppercase() {
+                    result_char = result_char.to_ascii_uppercase();
+                }
+                UValue::Letter(result_char)
+            },
         }
     }
 }
@@ -116,6 +137,10 @@ fn get_source_value(source_node: &SyntaxTree) -> UValue {
                     let val: f64 = t.value.clone().unwrap().parse().expect("Malformed float value");
                     return UValue::Float(val);
                 },
+                TokenName::Letter => {
+                    let val: char = t.value.clone().unwrap().chars().collect::<Vec<char>>()[0].clone();
+                    return UValue::Letter(val);
+                }
                 _ => {
                     panic!("Unexpected token in Source node: {:?}", t);
                 }
