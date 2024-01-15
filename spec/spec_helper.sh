@@ -1,4 +1,5 @@
 spec_helper_configure() {
+    ready_temp_dir
     set_u_binary
     before_each setup_tmp_program_file
 }
@@ -22,7 +23,11 @@ find_u() {
     printf "%s" "$find_result"
 }
 
+ready_temp_dir() {
+    program_dir=$(mktemp -d)
+}
+
 setup_tmp_program_file() {
-    program=$(mktemp --suffix=.u)
+    program=$(mktemp --tmpdir=$program_dir --suffix=.u)
 }
 
