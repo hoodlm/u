@@ -55,9 +55,9 @@ pub fn lex_analysis(input: &String) -> Result<Vec<Token>, Vec<LexError>> {
 }
 
 fn to_token(t: &str) -> Token {
-    let float_regex = Regex::new(r"[0-9]+\.[0-9]+").unwrap();
-    let int_regex = Regex::new(r"[0-9]+").unwrap();
-    let letter_regex = Regex::new(r"[a-z|A-Z]").unwrap();
+    let float_regex = Regex::new(r"^-?[0-9]+\.[0-9]+$").unwrap();
+    let int_regex = Regex::new(r"^-?[0-9]+$").unwrap();
+    let letter_regex = Regex::new(r"^[a-z|A-Z]$").unwrap();
 
     let (name, value) = match t {
         t if float_regex.is_match(t) => (TokenName::Float, Some(t.to_string())),

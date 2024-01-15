@@ -14,8 +14,8 @@ fn main() -> ExitCode {
     let tokens = match lex_result {
         Ok(tokens) => tokens,
         Err(errors) => {
+            eprintln!("Lexical analysis failed!");
             errors.iter().for_each(|msg| {
-                eprintln!("Lexical analysis failed!");
                 eprintln!("{}", msg);
             });
             return ExitCode::FAILURE;
