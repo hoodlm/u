@@ -1,4 +1,27 @@
+use std::error::Error;
+use std::fmt::{Display, Formatter};
+
 use crate::lex::{Token, TokenName};
+
+#[derive(Debug)]
+pub enum SyntaxError {
+    UnexpectedToken { unexpected: Token },
+    LineIncomplete,
+}
+
+impl Display for SyntaxError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SyntaxError::UnexpectedToken { unexpected } => {
+                write!(f, "Unexpected token: {:?}", unexpected)
+            },
+            SyntaxError::LineIncomplete => {
+                write!(f, "Expected more tokens before end of line")
+            },
+        }
+    }
+}
+impl Error for SyntaxError {}
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum SyntaxTreeKind {
@@ -61,65 +84,85 @@ impl SyntaxParser {
         self.state == SyntaxParserState::Complete
     }
 
-    fn handle_next(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) {
+    fn handle_next(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match &self.state {
             SyntaxParserState::GetNextLine => self.get_next_line_or_end_program(token, tree),
             SyntaxParserState::BuildingStatement => self.append_to_statement(token, tree),
-            _ => panic!("state not implemented"),
+            _ => panic!("Internal error: state not implemented"),
         }
     }
 
-    fn get_next_line_or_end_program(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) {
+    fn get_next_line_or_end_program(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token {
             None => {
                 self.state = SyntaxParserState::Complete;
+                Ok(())
             },
             Some(token) => self.start_next_line(token, tree),
         }
     }
 
-    fn start_next_line(&mut self, token: &Token, tree: &mut SyntaxTree) {
+    fn start_next_line(&mut self, token: &Token, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token.name {
             TokenName::Letter | TokenName::Integer | TokenName::Float => {
                 self.statement_count = tree.add_child(SyntaxTreeKind::Statement, None);
                 tree.children[self.statement_count].add_child(SyntaxTreeKind::Source, Some(token.clone()));
                 self.state = SyntaxParserState::BuildingStatement;
+                Ok(())
             }
-            _ => panic!("Unexpected token at start_next_line: {:?}", token),
+            _ => {
+                Err(SyntaxError::UnexpectedToken { unexpected: token.clone() })
+            }
         }
     }
 
-    fn append_to_statement(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) {
+    fn append_to_statement(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token {
-            None => panic!("Unexpected end of file"),
-            Some(token) => self.append_to_statement_concrete(token, tree),
+            None => {
+                self.state = SyntaxParserState::GetNextLine;
+                Err(SyntaxError::LineIncomplete)
+            },
+            Some(token) => {
+                self.append_to_statement_concrete(token, tree)
+            }
         }
     }
 
-    fn append_to_statement_concrete(&mut self, token: &Token, tree: &mut SyntaxTree) {
+    fn append_to_statement_concrete(&mut self, token: &Token, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token.name {
             TokenName::Plus | TokenName::Minus => {
                     tree.children[self.statement_count].add_child(SyntaxTreeKind::UnaryOp, Some(token.clone()));
+                    Ok(())
             },
             TokenName::Stdout => {
                     tree.children[self.statement_count].add_child(SyntaxTreeKind::Sink, Some(token.clone()));
                     self.state = SyntaxParserState::GetNextLine;
+                    Ok(())
             },
             _ => {
-                    panic!("Unexpected token {:?}!", token);
+                    Err(SyntaxError::UnexpectedToken { unexpected: token.clone() })
             },
         }
     }
 }
 
-pub fn syntax_analysis(input: &Vec<Token>) -> SyntaxTree {
+pub fn syntax_analysis(input: &Vec<Token>) -> Result<SyntaxTree, Vec<SyntaxError>> {
     let mut tree = SyntaxTree::root();
     let mut syntax_parser = SyntaxParser::new();
     let mut tokens = input.iter();
+    let mut syntax_errors: Vec<SyntaxError> = Vec::new();
 
     while !syntax_parser.is_done() {
         let token = tokens.next();
-        syntax_parser.handle_next(&token, &mut tree);
+        let token_result = syntax_parser.handle_next(&token, &mut tree);
+        match token_result {
+            Err(error) => syntax_errors.push(error),
+            Ok(_) => {},
+        }
     }
-    return tree;
+    if syntax_errors.is_empty() {
+        Ok(tree)
+    } else {
+        Err(syntax_errors)
+    }
 }

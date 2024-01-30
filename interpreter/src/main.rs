@@ -21,7 +21,17 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         },
     };
-    let ast = syntax_analysis(&tokens);
+    let syntax_result = syntax_analysis(&tokens);
+    let ast = match syntax_result {
+        Ok(ast) => ast,
+        Err(errors) => {
+            eprintln!("Syntax analysis failed!");
+            errors.iter().for_each(|msg| {
+                eprintln!("{}", msg);
+            });
+            return ExitCode::FAILURE;
+        }
+    };
     execute(&ast);
     return ExitCode::SUCCESS;
 }
