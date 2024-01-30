@@ -18,7 +18,7 @@ Describe 'lexer single error report'
   End
 
   It "reports [$1] as not a valid token in the middle of a line"
-    echo "1 + $1 STDOUT" >> $program
+    echo "1 + $1 STDOUT;" >> $program
     When call $U_INTERPRETER $program
     The stdout should be blank
     The status should be failure
@@ -29,7 +29,7 @@ Describe 'lexer single error report'
   End
 
   It "reports [$1] as not a valid token at the beginning of a line"
-    echo "$1 + STDOUT" >> $program
+    echo "$1 + STDOUT;" >> $program
     When call $U_INTERPRETER $program
     The stdout should be blank
     The status should be failure
@@ -40,7 +40,7 @@ Describe 'lexer single error report'
   End
 
   It "reports [$1] as not a valid token at the end of a line"
-    echo "5 + $1" >> $program
+    echo "5 + $1;" >> $program
     When call $U_INTERPRETER $program
     The stdout should be blank
     The status should be failure
@@ -53,12 +53,12 @@ End
 
 Describe 'lexer multi error report'
   It "Reports errors on mulitple lines"
-    echo "5 + + STDOUT" >> $program
-    echo "@@@@ + + STDOUT" >> $program
-    echo "6 + + STDOUT" >> $program
-    echo "##### + + STDOUT" >> $program
-    echo "//// + + STDOUT" >> $program
-    echo "7 + + STDOUT" >> $program
+    echo "5 + + STDOUT;" >> $program
+    echo "@@@@ + + STDOUT;" >> $program
+    echo "6 + + STDOUT;" >> $program
+    echo "##### + + STDOUT;" >> $program
+    echo "//// + + STDOUT;" >> $program
+    echo "7 + + STDOUT;" >> $program
     When call $U_INTERPRETER $program
     The stdout should be blank
     The status should be failure

@@ -1,7 +1,7 @@
 #shellcheck shell=sh
 Describe 'syntax analyzer errors'
   It "reports error if line starts with an operator"
-    echo "+ 1 STDOUT" >> $program
+    echo "+ 1 STDOUT;" >> $program
     When call $U_INTERPRETER $program
     The status should be failure
     The stdout should be blank
@@ -10,7 +10,7 @@ Describe 'syntax analyzer errors'
   End
 
   It "reports error if line starts with two source tokens"
-    echo "1 1 + STDOUT" >> $program
+    echo "1 1 + STDOUT;" >> $program
     When call $U_INTERPRETER $program
     The status should be failure
     The stdout should be blank
@@ -19,7 +19,7 @@ Describe 'syntax analyzer errors'
   End
 
   It "reports error if line starts has a source token in the middle"
-    echo "1 + 1 + STDOUT" >> $program
+    echo "1 + 1 + STDOUT;" >> $program
     When call $U_INTERPRETER $program
     The status should be failure
     The stdout should be blank
@@ -28,7 +28,7 @@ Describe 'syntax analyzer errors'
   End
 
   It "reports error if line doesn't have a sink"
-    echo "1 + +" >> $program
+    echo "1 + +;" >> $program
     When call $U_INTERPRETER $program
     The status should be failure
     The stdout should be blank
@@ -37,7 +37,7 @@ Describe 'syntax analyzer errors'
   End
 
   It "reports error if line has tokens after a sink"
-    echo "1 + STDOUT +" >> $program
+    echo "1 + STDOUT +;" >> $program
     When call $U_INTERPRETER $program
     The status should be failure
     The stdout should be blank

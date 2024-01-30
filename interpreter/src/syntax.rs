@@ -29,7 +29,7 @@ pub enum SyntaxTreeKind {
     Statement,
     Source,
     UnaryOp,
-    Sink,
+    EndOfLine,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -85,6 +85,10 @@ impl SyntaxParser {
     }
 
     fn handle_next(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
+        if token.is_some() && token.unwrap().name == TokenName::Whitespace {
+            // Whitespace is not syntactically significant
+            return Ok(());
+        }
         match &self.state {
             SyntaxParserState::GetNextLine => self.get_next_line_or_end_program(token, tree),
             SyntaxParserState::BuildingStatement => self.append_to_statement(token, tree),
@@ -130,12 +134,12 @@ impl SyntaxParser {
 
     fn append_to_statement_concrete(&mut self, token: &Token, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token.name {
-            TokenName::Plus | TokenName::Minus => {
+            TokenName::Plus | TokenName::Minus | TokenName::Stdout => {
                     tree.children[self.statement_count].add_child(SyntaxTreeKind::UnaryOp, Some(token.clone()));
                     Ok(())
             },
-            TokenName::Stdout => {
-                    tree.children[self.statement_count].add_child(SyntaxTreeKind::Sink, Some(token.clone()));
+            TokenName::Semicolon => {
+                    tree.children[self.statement_count].add_child(SyntaxTreeKind::EndOfLine, None);
                     self.state = SyntaxParserState::GetNextLine;
                     Ok(())
             },

@@ -80,8 +80,8 @@ pub fn execute(program: &SyntaxTree) {
 }
 
 fn exec_statement(statement: &SyntaxTree) {
-    let (source, sink) = prevalidate_statement(&statement);
-    let source_value = get_source_value(&source);
+    prevalidate_statement(&statement);
+    let source_value = get_source_value(&statement.children[0]);
 
     let mut result = source_value;
 
@@ -92,11 +92,9 @@ fn exec_statement(statement: &SyntaxTree) {
             result = apply_operator(&result, item);
         }
     });
-
-    apply_result_to_sink(result, &sink);
 }
 
-fn prevalidate_statement(statement: &SyntaxTree) -> (&SyntaxTree, &SyntaxTree) {
+fn prevalidate_statement(statement: &SyntaxTree) {
     assert!(
         statement.kind == SyntaxTreeKind::Statement,
         "SyntaxTree passed to exec_statement must be of type Statement"
@@ -114,10 +112,9 @@ fn prevalidate_statement(statement: &SyntaxTree) -> (&SyntaxTree, &SyntaxTree) {
         "Statement syntaxTree's first child should be a Source"
     );
     assert!(
-        sink.kind == SyntaxTreeKind::Sink,
-        "Statement syntaxTree's last node should be a Sink"
+        sink.kind == SyntaxTreeKind::EndOfLine,
+        "Statement syntaxTree's last node should be a EndOfLine"
     );
-    return (source, sink);
 }
 
 fn get_source_value(source_node: &SyntaxTree) -> UValue {
@@ -164,6 +161,10 @@ fn apply_operator(input: &UValue, operator: &SyntaxTree) -> UValue {
                 TokenName::Minus => {
                     return input - 1;
                 },
+                TokenName::Stdout => {
+                    println!("{}", input);
+                    return input.clone();
+                },
                 _ => {
                     panic!("Unexpected token in UnaryOp node: {:?}", t);
                 }
@@ -171,24 +172,3 @@ fn apply_operator(input: &UValue, operator: &SyntaxTree) -> UValue {
         }
     };
 }
-
-fn apply_result_to_sink(result: UValue, sink: &SyntaxTree) {
-    assert!(
-        sink.kind == SyntaxTreeKind::Sink,
-        "SyntaxTree passed to get_source_value must be of type Sink"
-    );
-    match &sink.token {
-        None => panic!("Sink nodes should always have a token: {:?}", &sink),
-        Some(t) => {
-            match t.name {
-                TokenName::Stdout => {
-                    println!("{}", result);
-                }
-                _ => {
-                    panic!("Unexpected token in Sink node: {:?}", t);
-                }
-            }
-        }
-    };
-}
-
