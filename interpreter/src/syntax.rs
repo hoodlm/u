@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
-use crate::lex::{Token, TokenName};
+use crate::lex::tokens::{Token, TokenName};
 
 #[derive(Debug)]
 pub enum SyntaxError {

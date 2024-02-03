@@ -1,6 +1,9 @@
 use std::error::Error;
 use std::fmt::{Formatter, Display};
+use crate::lex::tokens::{Token, TokenName};
 use regex::Regex;
+
+pub mod tokens;
 
 #[derive(Debug)]
 pub enum LexError {
@@ -17,25 +20,6 @@ impl Display for LexError {
     }
 }
 impl Error for LexError {}
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum TokenName {
-    Whitespace,
-    Float,
-    Integer,
-    Letter,
-    Plus,
-    Minus,
-    Stdout,
-    Unknown,
-    Semicolon,
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct Token {
-    pub name: TokenName,
-    pub value: Option<String>,
-}
 
 pub fn lex_analysis(input: &String) -> Result<Vec<Token>, Vec<LexError>> {
     let tokens = collect_tokens(input);

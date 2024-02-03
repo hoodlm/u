@@ -1,5 +1,5 @@
 use crate::syntax::{SyntaxTree, SyntaxTreeKind};
-use crate::lex::{TokenName};
+use crate::lex::tokens::{TokenName};
 use std::fmt::{Formatter, Display};
 use std::ops::{Add, Sub};
 use std::char::from_digit;
