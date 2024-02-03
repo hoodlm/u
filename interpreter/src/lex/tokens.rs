@@ -1,6 +1,6 @@
 use regex::Regex;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TokenName {
     Whitespace,
     Float,
@@ -20,7 +20,22 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn regex(token_name: TokenName) -> Regex {
+    /// This also controls the order of precedence when parsing tokens
+    pub fn all() -> Vec<TokenName> {
+        vec![
+            TokenName::Whitespace,
+            TokenName::Float,
+            TokenName::Integer,
+            TokenName::Stdout,
+            TokenName::Plus,
+            TokenName::Minus,
+            TokenName::Letter,
+            TokenName::Semicolon,
+            TokenName::Unknown,
+        ]
+    }
+
+    pub fn regex(token_name: &TokenName) -> Regex {
         match token_name {
             TokenName::Whitespace => { Regex::new(r"^\s+").unwrap() },
             TokenName::Float =>      { Regex::new(r"^-?[0-9]+\.[0-9]+\s+").unwrap() },
@@ -31,6 +46,20 @@ impl Token {
             TokenName::Stdout =>     { Regex::new(r"^STDOUT\s*").unwrap() },
             TokenName::Semicolon =>  { Regex::new(r"^;").unwrap() },
             TokenName::Unknown =>    { Regex::new(r"^\S+\s*").unwrap() },
+        }
+    }
+
+    pub fn pack_value(token_name: &TokenName, value: &str) -> Option<String> {
+        match token_name {
+            TokenName::Whitespace => Some(value.to_string()),
+            TokenName::Float =>      Some(value.trim().to_string()),
+            TokenName::Integer =>    Some(value.trim().to_string()),
+            TokenName::Letter =>     Some(value.trim().to_string()),
+            TokenName::Plus =>       Some(value.to_string()),
+            TokenName::Minus =>      Some(value.to_string()),
+            TokenName::Stdout =>     Some(value.to_string()),
+            TokenName::Semicolon =>  Some(value.to_string()),
+            TokenName::Unknown =>    Some(value.to_string()),
         }
     }
 }

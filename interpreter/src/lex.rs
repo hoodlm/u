@@ -42,151 +42,25 @@ fn collect_tokens(input: &String) -> Vec<Token> {
     if input.is_empty() {
         return tokens;
     }
-    let whitespace_regex = Token::regex(TokenName::Whitespace);
-    let float_regex = Token::regex(TokenName::Float);
-    let int_regex = Token::regex(TokenName::Integer);
-    let plus_regex = Token::regex(TokenName::Plus);
-    let minus_regex = Token::regex(TokenName::Minus);
-    let stdout_regex = Token::regex(TokenName::Stdout);
-    let letter_regex = Token::regex(TokenName::Letter);
-    let semicolon_regex = Token::regex(TokenName::Semicolon);
-    let unknown_token_regex = Token::regex(TokenName::Unknown);
-
-    let whitespace_mat = whitespace_regex.find(input);
-    if whitespace_mat.is_some() {
-        tokens.push(
-            Token {
-                name: TokenName::Whitespace,
-                value: Some(whitespace_mat.unwrap().as_str().to_string())
-            }
-        );
-        let skip_index = whitespace_mat.unwrap().end();
-        let remaining_input = &input[skip_index..].to_string();
-        let mut more_tokens = collect_tokens(remaining_input);
-        tokens.append(&mut more_tokens);
-        return tokens;
-    }
-
-    let float_mat = float_regex.find(input);
-    if float_mat.is_some() {
-        tokens.push(
-            Token {
-                name: TokenName::Float,
-                value: Some(float_mat.unwrap().as_str().trim().to_string())
-            }
-        );
-        let skip_index = float_mat.unwrap().end();
-        let remaining_input = &input[skip_index..].to_string();
-        let mut more_tokens = collect_tokens(remaining_input);
-        tokens.append(&mut more_tokens);
-        return tokens;
-    }
-
-    let int_mat = int_regex.find(input);
-    if int_mat.is_some() {
-        tokens.push(
-            Token {
-                name: TokenName::Integer,
-                value: Some(int_mat.unwrap().as_str().trim().to_string())
-            }
-        );
-        let skip_index = int_mat.unwrap().end();
-        let remaining_input = &input[skip_index..].to_string();
-        let mut more_tokens = collect_tokens(remaining_input);
-        tokens.append(&mut more_tokens);
-        return tokens;
-    }
-
-    let plus_mat = plus_regex.find(input);
-    if plus_mat.is_some() {
-        tokens.push(
-            Token {
-                name: TokenName::Plus,
-                value: None
-            }
-        );
-        let skip_index = plus_mat.unwrap().end();
-        let remaining_input = &input[skip_index..].to_string();
-        let mut more_tokens = collect_tokens(remaining_input);
-        tokens.append(&mut more_tokens);
-        return tokens;
-    }
-
-    let minus_mat = minus_regex.find(input);
-    if minus_mat.is_some() {
-        tokens.push(
-            Token {
-                name: TokenName::Minus,
-                value: None
-            }
-        );
-        let skip_index = minus_mat.unwrap().end();
-        let remaining_input = &input[skip_index..].to_string();
-        let mut more_tokens = collect_tokens(remaining_input);
-        tokens.append(&mut more_tokens);
-        return tokens;
-    }
-
-    let stdout_mat = stdout_regex.find(input);
-    if stdout_mat.is_some() {
-        tokens.push(
-            Token {
-                name: TokenName::Stdout,
-                value: None
-            }
-        );
-        let skip_index = stdout_mat.unwrap().end();
-        let remaining_input = &input[skip_index..].to_string();
-        let mut more_tokens = collect_tokens(remaining_input);
-        tokens.append(&mut more_tokens);
-        return tokens;
-    }
-
-    let letter_mat = letter_regex.find(input);
-    if letter_mat.is_some() {
-        tokens.push(
-            Token {
-                name: TokenName::Letter,
-                value: Some(letter_mat.unwrap().as_str().trim().to_string())
-            }
-        );
-        let skip_index = letter_mat.unwrap().end();
-        let remaining_input = &input[skip_index..].to_string();
-        let mut more_tokens = collect_tokens(remaining_input);
-        tokens.append(&mut more_tokens);
-        return tokens;
-    }
-
-    let semicolon_mat = semicolon_regex.find(input);
-    if semicolon_mat.is_some() {
-        tokens.push(
-            Token {
-                name: TokenName::Semicolon,
-                value: None
-            }
-        );
-        let skip_index = semicolon_mat.unwrap().end();
-        let remaining_input = &input[skip_index..].to_string();
-        let mut more_tokens = collect_tokens(remaining_input);
-        tokens.append(&mut more_tokens);
-        return tokens;
-    }
-
-    let unknown_token_mat = unknown_token_regex.find(input);
-    if unknown_token_mat.is_some() {
-        tokens.push(
-            Token {
-                name: TokenName::Unknown,
-                value: Some(unknown_token_mat.unwrap().as_str().trim().to_string())
-            }
-        );
-        let skip_index = unknown_token_mat.unwrap().end();
-        let remaining_input = &input[skip_index..].to_string();
-        let mut more_tokens = collect_tokens(remaining_input);
-        tokens.append(&mut more_tokens);
-        return tokens;
-    }
-
-    panic!("Unexpected: remaining input '{}'", input);
+    Token::all().iter().find(|token_kind| {
+        let regex = Token::regex(token_kind);
+        let token_match = regex.find(input);
+        if token_match.is_some() {
+            tokens.push(
+                Token {
+                    name: **token_kind,
+                    value: Token::pack_value(token_kind, token_match.unwrap().as_str()),
+                }
+            );
+            let skip_index = token_match.unwrap().end();
+            let remaining_input = &input[skip_index..].to_string();
+            let mut more_tokens = collect_tokens(remaining_input);
+            tokens.append(&mut more_tokens);
+            true
+        } else {
+            false
+        }
+    });
+    return tokens;
 }
 
