@@ -39,10 +39,7 @@ pub struct Token {
 }
 
 pub fn lex_analysis(input: &String) -> Result<Vec<Token>, Vec<LexError>> {
-    // let tokens: Vec<Token> = input.split_whitespace().map(|it| to_token(it)).collect();
     let tokens = collect_tokens(input);
-    // eprintln!("DEBUG: TOKENS: {:?}", tokens);
-
     let errors: Vec<LexError> = tokens
         .iter()
         .filter(|token| token.name == TokenName::Unknown)
@@ -72,6 +69,7 @@ fn collect_tokens(input: &String) -> Vec<Token> {
     let stdout_regex = Regex::new(r"^STDOUT").unwrap();
     let letter_regex = Regex::new(r"^[a-z|A-Z]").unwrap();
     let semicolon_regex = Regex::new(r"^;").unwrap();
+    let unknown_token_regex = Regex::new(r"^\S+").unwrap();
 
     let whitespace_mat = whitespace_regex.find(input);
     if whitespace_mat.is_some() {
@@ -187,6 +185,21 @@ fn collect_tokens(input: &String) -> Vec<Token> {
             }
         );
         let skip_index = semicolon_mat.unwrap().end();
+        let remaining_input = &input[skip_index..].to_string();
+        let mut more_tokens = collect_tokens(remaining_input);
+        tokens.append(&mut more_tokens);
+        return tokens;
+    }
+
+    let unknown_token_mat = unknown_token_regex.find(input);
+    if unknown_token_mat.is_some() {
+        tokens.push(
+            Token {
+                name: TokenName::Unknown,
+                value: Some(unknown_token_mat.unwrap().as_str().to_string())
+            }
+        );
+        let skip_index = unknown_token_mat.unwrap().end();
         let remaining_input = &input[skip_index..].to_string();
         let mut more_tokens = collect_tokens(remaining_input);
         tokens.append(&mut more_tokens);
