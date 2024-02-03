@@ -69,3 +69,15 @@ Describe 'lexer multi error report'
     The line 4 of stderr should include "////"
   End
 End
+
+Describe 'characters'
+  It "must be single-quoted"
+    echo "A + STDOUT;" >> $program
+    When call $U_INTERPRETER $program
+    The stdout should be blank
+    The status should be failure
+    The lines of stderr should eq 2
+    The line 1 of stderr should eq "Lexical analysis failed!"
+    The line 2 of stderr should include "Unknown token: A"
+  End
+End
