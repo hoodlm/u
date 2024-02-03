@@ -60,16 +60,15 @@ fn collect_tokens(input: &String) -> Vec<Token> {
     if input.is_empty() {
         return tokens;
     }
-
     let whitespace_regex = Regex::new(r"^\s+").unwrap();
-    let float_regex = Regex::new(r"^-?[0-9]+\.[0-9]+").unwrap();
-    let int_regex = Regex::new(r"^-?[0-9]+").unwrap();
-    let plus_regex = Regex::new(r"^\+").unwrap();
-    let minus_regex = Regex::new(r"^-").unwrap();
-    let stdout_regex = Regex::new(r"^STDOUT").unwrap();
-    let letter_regex = Regex::new(r"^[a-z|A-Z]").unwrap();
+    let float_regex = Regex::new(r"^-?[0-9]+\.[0-9]+\s+").unwrap();
+    let int_regex = Regex::new(r"^-?[0-9]+\s+").unwrap();
+    let plus_regex = Regex::new(r"^\+\s*").unwrap();
+    let minus_regex = Regex::new(r"^-\s*").unwrap();
+    let stdout_regex = Regex::new(r"^STDOUT\s*").unwrap();
+    let letter_regex = Regex::new(r"^[a-z|A-Z]\s*").unwrap();
     let semicolon_regex = Regex::new(r"^;").unwrap();
-    let unknown_token_regex = Regex::new(r"^\S+").unwrap();
+    let unknown_token_regex = Regex::new(r"^\S+\s*").unwrap();
 
     let whitespace_mat = whitespace_regex.find(input);
     if whitespace_mat.is_some() {
@@ -91,7 +90,7 @@ fn collect_tokens(input: &String) -> Vec<Token> {
         tokens.push(
             Token {
                 name: TokenName::Float,
-                value: Some(float_mat.unwrap().as_str().to_string())
+                value: Some(float_mat.unwrap().as_str().trim().to_string())
             }
         );
         let skip_index = float_mat.unwrap().end();
@@ -106,7 +105,7 @@ fn collect_tokens(input: &String) -> Vec<Token> {
         tokens.push(
             Token {
                 name: TokenName::Integer,
-                value: Some(int_mat.unwrap().as_str().to_string())
+                value: Some(int_mat.unwrap().as_str().trim().to_string())
             }
         );
         let skip_index = int_mat.unwrap().end();
@@ -166,7 +165,7 @@ fn collect_tokens(input: &String) -> Vec<Token> {
         tokens.push(
             Token {
                 name: TokenName::Letter,
-                value: Some(letter_mat.unwrap().as_str().to_string())
+                value: Some(letter_mat.unwrap().as_str().trim().to_string())
             }
         );
         let skip_index = letter_mat.unwrap().end();
@@ -196,7 +195,7 @@ fn collect_tokens(input: &String) -> Vec<Token> {
         tokens.push(
             Token {
                 name: TokenName::Unknown,
-                value: Some(unknown_token_mat.unwrap().as_str().to_string())
+                value: Some(unknown_token_mat.unwrap().as_str().trim().to_string())
             }
         );
         let skip_index = unknown_token_mat.unwrap().end();
