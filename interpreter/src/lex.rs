@@ -1,7 +1,6 @@
 use std::error::Error;
 use std::fmt::{Formatter, Display};
 use crate::lex::tokens::{Token, TokenName};
-use regex::Regex;
 
 pub mod tokens;
 
@@ -43,15 +42,15 @@ fn collect_tokens(input: &String) -> Vec<Token> {
     if input.is_empty() {
         return tokens;
     }
-    let whitespace_regex = Regex::new(r"^\s+").unwrap();
-    let float_regex = Regex::new(r"^-?[0-9]+\.[0-9]+\s+").unwrap();
-    let int_regex = Regex::new(r"^-?[0-9]+\s+").unwrap();
-    let plus_regex = Regex::new(r"^\+\s*").unwrap();
-    let minus_regex = Regex::new(r"^-\s*").unwrap();
-    let stdout_regex = Regex::new(r"^STDOUT\s*").unwrap();
-    let letter_regex = Regex::new(r"^[a-z|A-Z]\s*").unwrap();
-    let semicolon_regex = Regex::new(r"^;").unwrap();
-    let unknown_token_regex = Regex::new(r"^\S+\s*").unwrap();
+    let whitespace_regex = Token::regex(TokenName::Whitespace);
+    let float_regex = Token::regex(TokenName::Float);
+    let int_regex = Token::regex(TokenName::Integer);
+    let plus_regex = Token::regex(TokenName::Plus);
+    let minus_regex = Token::regex(TokenName::Minus);
+    let stdout_regex = Token::regex(TokenName::Stdout);
+    let letter_regex = Token::regex(TokenName::Letter);
+    let semicolon_regex = Token::regex(TokenName::Semicolon);
+    let unknown_token_regex = Token::regex(TokenName::Unknown);
 
     let whitespace_mat = whitespace_regex.find(input);
     if whitespace_mat.is_some() {
