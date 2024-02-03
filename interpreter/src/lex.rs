@@ -20,7 +20,6 @@ impl Error for LexError {}
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum TokenName {
-    ProgramStart,
     Whitespace,
     Float,
     Integer,
