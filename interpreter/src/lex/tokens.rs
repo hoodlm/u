@@ -10,6 +10,7 @@ pub enum TokenName {
     Plus,
     Minus,
     Stdout,
+    Repeater,
     Unknown,
     Semicolon,
 }
@@ -25,6 +26,7 @@ impl Token {
     pub fn all() -> Vec<TokenName> {
         vec![
             TokenName::Whitespace,
+            TokenName::Repeater,
             TokenName::Float,
             TokenName::Integer,
             TokenName::Stdout,
@@ -43,6 +45,7 @@ impl Token {
             TokenName::Float =>      { Regex::new(r"^-?[0-9]+\.[0-9]+\s+").unwrap() },
             TokenName::Integer =>    { Regex::new(r"^-?[0-9]+\s+").unwrap() },
             TokenName::Letter =>     { Regex::new(r"^'[a-z|A-Z]'\s*").unwrap() },
+            TokenName::Repeater =>   { Regex::new(r"^\{[0-9]+\}\s*").unwrap() },
             TokenName::UString =>    { Regex::new("^\"[^\"]+\"\\s*").unwrap() },
             TokenName::Plus =>       { Regex::new(r"^\+\s*").unwrap() },
             TokenName::Minus =>      { Regex::new(r"^-\s*").unwrap() },
@@ -58,6 +61,7 @@ impl Token {
             TokenName::Float =>      Some(value.trim().to_string()),
             TokenName::Integer =>    Some(value.trim().to_string()),
             TokenName::Letter =>     Some(value.trim().trim_start_matches('\'').trim_end_matches('\'').to_string()),
+            TokenName::Repeater =>   Some(value.trim().trim_start_matches('{').trim_end_matches('}').to_string()),
             TokenName::UString =>    Some(value.trim().trim_start_matches('\"').trim_end_matches('\"').to_string()),
             TokenName::Plus =>       Some(value.to_string()),
             TokenName::Minus =>      Some(value.to_string()),
