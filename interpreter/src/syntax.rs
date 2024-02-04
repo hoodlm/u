@@ -108,7 +108,7 @@ impl SyntaxParser {
 
     fn start_next_line(&mut self, token: &Token, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token.name {
-            TokenName::Letter | TokenName::Integer | TokenName::Float => {
+            TokenName::Letter | TokenName::Integer | TokenName::Float | TokenName::UString => {
                 self.statement_count = tree.add_child(SyntaxTreeKind::Statement, None);
                 tree.children[self.statement_count].add_child(SyntaxTreeKind::Source, Some(token.clone()));
                 self.state = SyntaxParserState::BuildingStatement;

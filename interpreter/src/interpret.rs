@@ -9,6 +9,7 @@ enum UValue {
     Integer(i64),
     Float(f64),
     Letter(char),
+    UString(String),
 }
 
 impl Display for UValue {
@@ -17,6 +18,7 @@ impl Display for UValue {
             UValue::Integer(int) => write!(f, "{}", int),
             UValue::Float(float) => write!(f, "{}", float),
             UValue::Letter(c) => write!(f, "{}", c),
+            UValue::UString(s) => write!(f, "{}", s),
         }
     }
 }
@@ -28,16 +30,28 @@ impl Add<i32> for &UValue {
             UValue::Integer(int) => UValue::Integer(int + other as i64),
             UValue::Float(float) => UValue::Float(float + other as f64),
             UValue::Letter(c) => {
-                let n = c.to_digit(36).unwrap() - 10;
-                let incremented = (n + other as u32) % 26;
-                let mut result_char = from_digit(incremented + 10, 36).unwrap();
-                if c.is_ascii_uppercase() {
-                    result_char = result_char.to_ascii_uppercase();
-                }
-                UValue::Letter(result_char)
+                UValue::Letter(char_add(c, other))
+            },
+            UValue::UString(s) => {
+                UValue::UString(
+                    s.chars().map(|c| char_add(&c, other)).collect()
+                )
             },
         }
     }
+}
+
+fn char_add(c: &char, other: i32) -> char {
+    if c.is_whitespace() {
+        return c.clone()
+    }
+    let n = c.to_digit(36).unwrap() - 10;
+    let incremented = (n + other as u32) % 26;
+    let mut result_char = from_digit(incremented + 10, 36).unwrap();
+    if c.is_ascii_uppercase() {
+        result_char = result_char.to_ascii_uppercase();
+    }
+    return result_char
 }
 
 impl Sub<i32> for &UValue {
@@ -47,16 +61,28 @@ impl Sub<i32> for &UValue {
             UValue::Integer(int) => UValue::Integer(int - other as i64),
             UValue::Float(float) => UValue::Float(float - other as f64),
             UValue::Letter(c) => {
-                let n: i32 = (c.to_digit(36).unwrap() - 10).try_into().unwrap();
-                let decremented = (n - other).rem_euclid(26) + 10;
-                let mut result_char = from_digit(decremented.try_into().unwrap(), 36).unwrap();
-                if c.is_ascii_uppercase() {
-                    result_char = result_char.to_ascii_uppercase();
-                }
-                UValue::Letter(result_char)
+                UValue::Letter(char_sub(c, other))
+            },
+            UValue::UString(s) => {
+                UValue::UString(
+                    s.chars().map(|c| char_sub(&c, other)).collect()
+                )
             },
         }
     }
+}
+
+fn char_sub(c: &char, other: i32) -> char {
+    if c.is_whitespace() {
+        return c.clone()
+    }
+    let n: i32 = (c.to_digit(36).unwrap() - 10).try_into().unwrap();
+    let decremented = (n - other).rem_euclid(26) + 10;
+    let mut result_char = from_digit(decremented.try_into().unwrap(), 36).unwrap();
+    if c.is_ascii_uppercase() {
+        result_char = result_char.to_ascii_uppercase();
+    }
+    return result_char
 }
 
 pub fn execute(program: &SyntaxTree) {
@@ -137,6 +163,10 @@ fn get_source_value(source_node: &SyntaxTree) -> UValue {
                 TokenName::Letter => {
                     let val: char = t.value.clone().unwrap().chars().collect::<Vec<char>>()[0].clone();
                     return UValue::Letter(val);
+                },
+                TokenName::UString => {
+                    let val: String = t.value.clone().unwrap().to_string();
+                    return UValue::UString(val);
                 }
                 _ => {
                     panic!("Unexpected token in Source node: {:?}", t);
