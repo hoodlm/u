@@ -48,13 +48,16 @@ impl SyntaxTree {
         }
     }
 
-    fn add_child(&mut self, kind: SyntaxTreeKind, token: Option<Token>) -> usize {
-        let new = SyntaxTree {
+    fn new(kind: SyntaxTreeKind, token: Option<Token>) -> Self {
+        SyntaxTree {
             kind: kind,
             children: Vec::new(),
             token: token,
-        };
-        self.children.push(new);
+        }
+    }
+
+    fn add_child(&mut self, child: SyntaxTree) -> usize {
+        self.children.push(child);
         return self.children.len() - 1;
     }
 }
@@ -109,8 +112,10 @@ impl SyntaxParser {
     fn start_next_line(&mut self, token: &Token, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token.name {
             TokenName::Letter | TokenName::Integer | TokenName::Float | TokenName::UString => {
-                self.statement_count = tree.add_child(SyntaxTreeKind::Statement, None);
-                tree.children[self.statement_count].add_child(SyntaxTreeKind::Source, Some(token.clone()));
+                let statement = SyntaxTree::new(SyntaxTreeKind::Statement, None);
+                self.statement_count = tree.add_child(statement);
+                let source = SyntaxTree::new(SyntaxTreeKind::Source, Some(token.clone()));
+                tree.children[self.statement_count].add_child(source);
                 self.state = SyntaxParserState::BuildingStatement;
                 Ok(())
             }
@@ -135,11 +140,13 @@ impl SyntaxParser {
     fn append_to_statement_concrete(&mut self, token: &Token, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token.name {
             TokenName::Plus | TokenName::Minus | TokenName::Stdout => {
-                    tree.children[self.statement_count].add_child(SyntaxTreeKind::UnaryOp, Some(token.clone()));
+                    let op = SyntaxTree::new(SyntaxTreeKind::UnaryOp, Some(token.clone()));
+                    tree.children[self.statement_count].add_child(op);
                     Ok(())
             },
             TokenName::Semicolon => {
-                    tree.children[self.statement_count].add_child(SyntaxTreeKind::EndOfLine, None);
+                    let end = SyntaxTree::new(SyntaxTreeKind::EndOfLine, None);
+                    tree.children[self.statement_count].add_child(end);
                     self.state = SyntaxParserState::GetNextLine;
                     Ok(())
             },
