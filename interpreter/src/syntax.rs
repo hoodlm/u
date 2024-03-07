@@ -56,16 +56,14 @@ impl SyntaxTree {
         }
     }
 
-    fn add_child(&mut self, child: SyntaxTree) -> usize {
+    fn add_child(&mut self, child: SyntaxTree) {
         self.children.push(child);
-        return self.children.len() - 1;
     }
 }
 
 #[derive(Debug, PartialEq)]
 struct SyntaxParser {
     state: SyntaxParserState,
-    statement_count: usize,
 }
 
 #[derive(Debug, PartialEq)]
@@ -79,7 +77,6 @@ impl SyntaxParser {
     fn new() -> Self {
         return SyntaxParser {
             state: SyntaxParserState::GetNextLine,
-            statement_count: 0,
         };
     }
 
@@ -112,10 +109,10 @@ impl SyntaxParser {
     fn start_next_line(&mut self, token: &Token, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token.name {
             TokenName::Letter | TokenName::Integer | TokenName::Float | TokenName::UString => {
-                let statement = SyntaxTree::new(SyntaxTreeKind::Statement, None);
-                self.statement_count = tree.add_child(statement);
+                let mut statement = SyntaxTree::new(SyntaxTreeKind::Statement, None);
                 let source = SyntaxTree::new(SyntaxTreeKind::Source, Some(token.clone()));
-                tree.children[self.statement_count].add_child(source);
+                statement.add_child(source);
+                tree.add_child(statement);
                 self.state = SyntaxParserState::BuildingStatement;
                 Ok(())
             }
@@ -141,12 +138,16 @@ impl SyntaxParser {
         match token.name {
             TokenName::Plus | TokenName::Minus | TokenName::Stdout => {
                     let op = SyntaxTree::new(SyntaxTreeKind::UnaryOp, Some(token.clone()));
-                    tree.children[self.statement_count].add_child(op);
+                    let tip = tree.children.iter_mut().last()
+                        .expect("Internal error: Should not enter append_to_statement_concrete() if tree has no children");
+                    tip.add_child(op);
                     Ok(())
             },
             TokenName::Semicolon => {
                     let end = SyntaxTree::new(SyntaxTreeKind::EndOfLine, None);
-                    tree.children[self.statement_count].add_child(end);
+                    let tip = tree.children.iter_mut().last()
+                        .expect("Internal error: Should not enter append_to_statement_concrete() if tree has no children");
+                    tip.add_child(end);
                     self.state = SyntaxParserState::GetNextLine;
                     Ok(())
             },
