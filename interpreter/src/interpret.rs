@@ -1,4 +1,4 @@
-use crate::syntax::{SyntaxTree, SyntaxTreeKind};
+use crate::syntax::tree::{SyntaxTree, SyntaxTreeKind};
 use crate::lex::tokens::{TokenName};
 use std::fmt::{Formatter, Display};
 use std::ops::{Add, Sub};

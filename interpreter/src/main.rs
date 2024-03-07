@@ -2,7 +2,7 @@ use std::env;
 use std::fs;
 use std::process::ExitCode;
 
-use u::syntax::syntax_analysis;
+use u::syntax::parser::syntax_analysis;
 use u::lex::lex_analysis;
 use u::interpret::{execute};
 
