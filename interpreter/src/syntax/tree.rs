@@ -1,6 +1,6 @@
 use crate::lex::tokens::Token;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq)]
 pub enum SyntaxTreeKind {
     ProgramStart,
     Statement,
@@ -9,7 +9,7 @@ pub enum SyntaxTreeKind {
     EndOfLine,
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq)]
 pub struct SyntaxTree {
     pub kind: SyntaxTreeKind,
     pub children: Vec<SyntaxTree>,
