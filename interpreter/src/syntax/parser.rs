@@ -37,7 +37,6 @@ pub struct ProgramParser {
 enum ProgramParserState {
     GetNextLine,
     BuildingStatement,
-    Complete,
 }
 
 impl SyntaxParser for ProgramParser {
@@ -45,14 +44,18 @@ impl SyntaxParser for ProgramParser {
         let mut tree = SyntaxTree::root();
         let mut syntax_errors: Vec<SyntaxError> = Vec::new();
 
-        while !self.is_done() {
-            let token = tokens.next();
-            let token_result = self.handle_next(&token, &mut tree);
+        tokens.for_each(|token| {
+            let token_result = self.handle_next(token, &mut tree);
             match token_result {
                 Err(error) => syntax_errors.push(error),
                 Ok(_) => {},
             }
+        });
+
+        if self.state != ProgramParserState::GetNextLine {
+            syntax_errors.push(SyntaxError::LineIncomplete {});
         }
+
         if syntax_errors.is_empty() {
             Ok(tree)
         } else {
@@ -68,29 +71,14 @@ impl ProgramParser {
         };
     }
 
-    fn is_done(&self) -> bool {
-        self.state == ProgramParserState::Complete
-    }
-
-    fn handle_next(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
-        if token.is_some() && token.unwrap().name == TokenName::Whitespace {
+    fn handle_next(&mut self, token: &Token, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
+        if token.name == TokenName::Whitespace {
             // Whitespace is not syntactically significant
             return Ok(());
         }
         match &self.state {
-            ProgramParserState::GetNextLine => self.get_next_line_or_end_program(token, tree),
+            ProgramParserState::GetNextLine => self.start_next_line(token, tree),
             ProgramParserState::BuildingStatement => self.append_to_statement(token, tree),
-            _ => panic!("Internal error: state not implemented"),
-        }
-    }
-
-    fn get_next_line_or_end_program(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
-        match token {
-            None => {
-                self.state = ProgramParserState::Complete;
-                Ok(())
-            },
-            Some(token) => self.start_next_line(token, tree),
         }
     }
 
@@ -110,19 +98,7 @@ impl ProgramParser {
         }
     }
 
-    fn append_to_statement(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
-        match token {
-            None => {
-                self.state = ProgramParserState::GetNextLine;
-                Err(SyntaxError::LineIncomplete)
-            },
-            Some(token) => {
-                self.append_to_statement_concrete(token, tree)
-            }
-        }
-    }
-
-    fn append_to_statement_concrete(&mut self, token: &Token, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
+    fn append_to_statement(&mut self, token: &Token, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token.name {
             TokenName::Plus | TokenName::Minus | TokenName::Stdout => {
                     let op = SyntaxTree::new(SyntaxTreeKind::UnaryOp, Some(token.clone()));
