@@ -5,8 +5,10 @@ Describe 'syntax analyzer errors'
     When call $U_INTERPRETER $program
     The status should be failure
     The stdout should be blank
-    The lines of stderr should eq 2
+    The stderr should not be blank
     The line 1 of stderr should include "Syntax analysis failed"
+    The line 2 of stderr should include "Unexpected token:"
+    The line 2 of stderr should include "Plus"
   End
 
   It "reports error if line starts with two source tokens"

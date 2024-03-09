@@ -21,7 +21,8 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         },
     };
-    let syntax_result = ProgramParser::new().parse(&mut tokens.iter());
+    let mut token_iter = tokens.iter().peekable();
+    let syntax_result = ProgramParser::new().parse(&mut token_iter);
     let ast = match syntax_result {
         Ok(ast) => ast,
         Err(errors) => {
