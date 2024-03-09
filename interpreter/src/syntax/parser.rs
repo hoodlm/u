@@ -24,27 +24,52 @@ impl Display for SyntaxError {
 }
 impl Error for SyntaxError {}
 
-#[derive(Debug, PartialEq)]
-struct SyntaxParser {
-    state: SyntaxParserState,
+pub trait SyntaxParser {
+    fn parse(&mut self, tokens: &mut dyn Iterator::<Item = &Token>) -> Result<SyntaxTree, Vec<SyntaxError>>;
 }
 
 #[derive(Debug, PartialEq)]
-enum SyntaxParserState {
+pub struct ProgramParser {
+    state: ProgramParserState,
+}
+
+#[derive(Debug, PartialEq)]
+enum ProgramParserState {
     GetNextLine,
     BuildingStatement,
     Complete,
 }
 
-impl SyntaxParser {
-    fn new() -> Self {
-        return SyntaxParser {
-            state: SyntaxParserState::GetNextLine,
+impl SyntaxParser for ProgramParser {
+    fn parse(&mut self, tokens: &mut dyn Iterator<Item = &Token>) -> Result<SyntaxTree, Vec<SyntaxError>> {
+        let mut tree = SyntaxTree::root();
+        let mut syntax_errors: Vec<SyntaxError> = Vec::new();
+
+        while !self.is_done() {
+            let token = tokens.next();
+            let token_result = self.handle_next(&token, &mut tree);
+            match token_result {
+                Err(error) => syntax_errors.push(error),
+                Ok(_) => {},
+            }
+        }
+        if syntax_errors.is_empty() {
+            Ok(tree)
+        } else {
+            Err(syntax_errors)
+        }
+    }
+}
+
+impl ProgramParser {
+    pub fn new() -> Self {
+        return ProgramParser {
+            state: ProgramParserState::GetNextLine,
         };
     }
 
     fn is_done(&self) -> bool {
-        self.state == SyntaxParserState::Complete
+        self.state == ProgramParserState::Complete
     }
 
     fn handle_next(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
@@ -53,8 +78,8 @@ impl SyntaxParser {
             return Ok(());
         }
         match &self.state {
-            SyntaxParserState::GetNextLine => self.get_next_line_or_end_program(token, tree),
-            SyntaxParserState::BuildingStatement => self.append_to_statement(token, tree),
+            ProgramParserState::GetNextLine => self.get_next_line_or_end_program(token, tree),
+            ProgramParserState::BuildingStatement => self.append_to_statement(token, tree),
             _ => panic!("Internal error: state not implemented"),
         }
     }
@@ -62,7 +87,7 @@ impl SyntaxParser {
     fn get_next_line_or_end_program(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token {
             None => {
-                self.state = SyntaxParserState::Complete;
+                self.state = ProgramParserState::Complete;
                 Ok(())
             },
             Some(token) => self.start_next_line(token, tree),
@@ -76,7 +101,7 @@ impl SyntaxParser {
                 let source = SyntaxTree::new(SyntaxTreeKind::Source, Some(token.clone()));
                 statement.add_child(source);
                 tree.add_child(statement);
-                self.state = SyntaxParserState::BuildingStatement;
+                self.state = ProgramParserState::BuildingStatement;
                 Ok(())
             }
             _ => {
@@ -88,7 +113,7 @@ impl SyntaxParser {
     fn append_to_statement(&mut self, token: &Option<&Token>, tree: &mut SyntaxTree) -> Result<(), SyntaxError> {
         match token {
             None => {
-                self.state = SyntaxParserState::GetNextLine;
+                self.state = ProgramParserState::GetNextLine;
                 Err(SyntaxError::LineIncomplete)
             },
             Some(token) => {
@@ -111,7 +136,7 @@ impl SyntaxParser {
                     let tip = tree.children.iter_mut().last()
                         .expect("Internal error: Should not enter append_to_statement_concrete() if tree has no children");
                     tip.add_child(end);
-                    self.state = SyntaxParserState::GetNextLine;
+                    self.state = ProgramParserState::GetNextLine;
                     Ok(())
             },
             _ => {
@@ -121,23 +146,3 @@ impl SyntaxParser {
     }
 }
 
-pub fn syntax_analysis(input: &Vec<Token>) -> Result<SyntaxTree, Vec<SyntaxError>> {
-    let mut tree = SyntaxTree::root();
-    let mut syntax_parser = SyntaxParser::new();
-    let mut tokens = input.iter();
-    let mut syntax_errors: Vec<SyntaxError> = Vec::new();
-
-    while !syntax_parser.is_done() {
-        let token = tokens.next();
-        let token_result = syntax_parser.handle_next(&token, &mut tree);
-        match token_result {
-            Err(error) => syntax_errors.push(error),
-            Ok(_) => {},
-        }
-    }
-    if syntax_errors.is_empty() {
-        Ok(tree)
-    } else {
-        Err(syntax_errors)
-    }
-}

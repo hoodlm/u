@@ -2,7 +2,7 @@ use std::env;
 use std::fs;
 use std::process::ExitCode;
 
-use u::syntax::parser::syntax_analysis;
+use u::syntax::parser::{SyntaxParser, ProgramParser};
 use u::lex::lex_analysis;
 use u::interpret::{execute};
 
@@ -21,7 +21,7 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         },
     };
-    let syntax_result = syntax_analysis(&tokens);
+    let syntax_result = ProgramParser::new().parse(&mut tokens.iter());
     let ast = match syntax_result {
         Ok(ast) => ast,
         Err(errors) => {
