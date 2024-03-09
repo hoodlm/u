@@ -2,9 +2,9 @@ use std::env;
 use std::fs;
 use std::process::ExitCode;
 
-use u::syntax::parser::{SyntaxParser, ProgramParser};
+use u::interpret::execute;
 use u::lex::lex_analysis;
-use u::interpret::{execute};
+use u::syntax::parser::{ProgramParser, SyntaxParser};
 
 fn main() -> ExitCode {
     let filename = infile_from_args();
@@ -19,7 +19,7 @@ fn main() -> ExitCode {
                 eprintln!("{}", msg);
             });
             return ExitCode::FAILURE;
-        },
+        }
     };
     let mut token_iter = tokens.iter().peekable();
     let syntax_result = ProgramParser::new().parse(&mut token_iter);
@@ -44,4 +44,3 @@ fn infile_from_args() -> String {
     }
     return String::from(&args[1]);
 }
-

@@ -1,8 +1,8 @@
+use crate::lex::tokens::TokenName;
 use crate::syntax::tree::{SyntaxTree, SyntaxTreeKind};
-use crate::lex::tokens::{TokenName};
-use std::fmt::{Formatter, Display};
-use std::ops::{Add, Sub};
 use std::char::from_digit;
+use std::fmt::{Display, Formatter};
+use std::ops::{Add, Sub};
 
 #[derive(Debug, Clone)]
 enum UValue {
@@ -29,21 +29,15 @@ impl Add<i32> for &UValue {
         match self {
             UValue::Integer(int) => UValue::Integer(int + other as i64),
             UValue::Float(float) => UValue::Float(float + other as f64),
-            UValue::Letter(c) => {
-                UValue::Letter(char_add(c, other))
-            },
-            UValue::UString(s) => {
-                UValue::UString(
-                    s.chars().map(|c| char_add(&c, other)).collect()
-                )
-            },
+            UValue::Letter(c) => UValue::Letter(char_add(c, other)),
+            UValue::UString(s) => UValue::UString(s.chars().map(|c| char_add(&c, other)).collect()),
         }
     }
 }
 
 fn char_add(c: &char, other: i32) -> char {
     if c.is_whitespace() {
-        return c.clone()
+        return c.clone();
     }
     let n = c.to_digit(36).unwrap() - 10;
     let incremented = (n + other as u32) % 26;
@@ -51,7 +45,7 @@ fn char_add(c: &char, other: i32) -> char {
     if c.is_ascii_uppercase() {
         result_char = result_char.to_ascii_uppercase();
     }
-    return result_char
+    return result_char;
 }
 
 impl Sub<i32> for &UValue {
@@ -60,21 +54,15 @@ impl Sub<i32> for &UValue {
         match self {
             UValue::Integer(int) => UValue::Integer(int - other as i64),
             UValue::Float(float) => UValue::Float(float - other as f64),
-            UValue::Letter(c) => {
-                UValue::Letter(char_sub(c, other))
-            },
-            UValue::UString(s) => {
-                UValue::UString(
-                    s.chars().map(|c| char_sub(&c, other)).collect()
-                )
-            },
+            UValue::Letter(c) => UValue::Letter(char_sub(c, other)),
+            UValue::UString(s) => UValue::UString(s.chars().map(|c| char_sub(&c, other)).collect()),
         }
     }
 }
 
 fn char_sub(c: &char, other: i32) -> char {
     if c.is_whitespace() {
-        return c.clone()
+        return c.clone();
     }
     let n: i32 = (c.to_digit(36).unwrap() - 10).try_into().unwrap();
     let decremented = (n - other).rem_euclid(26) + 10;
@@ -82,7 +70,7 @@ fn char_sub(c: &char, other: i32) -> char {
     if c.is_ascii_uppercase() {
         result_char = result_char.to_ascii_uppercase();
     }
-    return result_char
+    return result_char;
 }
 
 pub fn execute(program: &SyntaxTree) {
@@ -149,30 +137,41 @@ fn get_source_value(source_node: &SyntaxTree) -> UValue {
         "SyntaxTree passed to get_source_value must be of type Source"
     );
     match &source_node.token {
-        None => panic!("Source nodes should always have a token: {:?}", &source_node),
-        Some(t) => {
-            match t.name {
-                TokenName::Integer => {
-                    let val: i64 = t.value.clone().unwrap().parse().expect("Malformed integer value");
-                    return UValue::Integer(val);
-                },
-                TokenName::Float => {
-                    let val: f64 = t.value.clone().unwrap().parse().expect("Malformed float value");
-                    return UValue::Float(val);
-                },
-                TokenName::Letter => {
-                    let val: char = t.value.clone().unwrap().chars().collect::<Vec<char>>()[0].clone();
-                    return UValue::Letter(val);
-                },
-                TokenName::UString => {
-                    let val: String = t.value.clone().unwrap().to_string();
-                    return UValue::UString(val);
-                }
-                _ => {
-                    panic!("Unexpected token in Source node: {:?}", t);
-                }
+        None => panic!(
+            "Source nodes should always have a token: {:?}",
+            &source_node
+        ),
+        Some(t) => match t.name {
+            TokenName::Integer => {
+                let val: i64 = t
+                    .value
+                    .clone()
+                    .unwrap()
+                    .parse()
+                    .expect("Malformed integer value");
+                return UValue::Integer(val);
             }
-        }
+            TokenName::Float => {
+                let val: f64 = t
+                    .value
+                    .clone()
+                    .unwrap()
+                    .parse()
+                    .expect("Malformed float value");
+                return UValue::Float(val);
+            }
+            TokenName::Letter => {
+                let val: char = t.value.clone().unwrap().chars().collect::<Vec<char>>()[0].clone();
+                return UValue::Letter(val);
+            }
+            TokenName::UString => {
+                let val: String = t.value.clone().unwrap().to_string();
+                return UValue::UString(val);
+            }
+            _ => {
+                panic!("Unexpected token in Source node: {:?}", t);
+            }
+        },
     };
 }
 
@@ -183,22 +182,20 @@ fn apply_operator(input: &UValue, operator: &SyntaxTree) -> UValue {
     );
     match &operator.token {
         None => panic!("UnaryOp nodes should always have a token: {:?}", &operator),
-        Some(t) => {
-            match t.name {
-                TokenName::Plus => {
-                    return input + 1;
-                },
-                TokenName::Minus => {
-                    return input - 1;
-                },
-                TokenName::Stdout => {
-                    println!("{}", input);
-                    return input.clone();
-                },
-                _ => {
-                    panic!("Unexpected token in UnaryOp node: {:?}", t);
-                }
+        Some(t) => match t.name {
+            TokenName::Plus => {
+                return input + 1;
             }
-        }
+            TokenName::Minus => {
+                return input - 1;
+            }
+            TokenName::Stdout => {
+                println!("{}", input);
+                return input.clone();
+            }
+            _ => {
+                panic!("Unexpected token in UnaryOp node: {:?}", t);
+            }
+        },
     };
 }

@@ -37,4 +37,3 @@ impl SyntaxTree {
         self.children.push(child);
     }
 }
-

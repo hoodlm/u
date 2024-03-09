@@ -1,6 +1,6 @@
-use std::error::Error;
-use std::fmt::{Formatter, Display};
 use crate::lex::tokens::{Token, TokenName};
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 
 pub mod tokens;
 
@@ -14,7 +14,7 @@ impl Display for LexError {
         match self {
             LexError::UnknownToken { value } => {
                 write!(f, "Unknown token: {}", value)
-            },
+            }
         }
     }
 }
@@ -26,7 +26,10 @@ pub fn lex_analysis(input: &String) -> Result<Vec<Token>, Vec<LexError>> {
         .iter()
         .filter(|token| token.name == TokenName::Unknown)
         .map(|token| LexError::UnknownToken {
-            value: token.value.clone().expect("Internal error: Unknown token that does not have a value")
+            value: token
+                .value
+                .clone()
+                .expect("Internal error: Unknown token that does not have a value"),
         })
         .collect();
 
@@ -46,12 +49,10 @@ fn collect_tokens(input: &String) -> Vec<Token> {
         let regex = Token::regex(token_kind);
         let token_match = regex.find(input);
         if token_match.is_some() {
-            tokens.push(
-                Token {
-                    name: **token_kind,
-                    value: Token::pack_value(token_kind, token_match.unwrap().as_str()),
-                }
-            );
+            tokens.push(Token {
+                name: **token_kind,
+                value: Token::pack_value(token_kind, token_match.unwrap().as_str()),
+            });
             let skip_index = token_match.unwrap().end();
             let remaining_input = &input[skip_index..].to_string();
             let mut more_tokens = collect_tokens(remaining_input);
@@ -63,4 +64,3 @@ fn collect_tokens(input: &String) -> Vec<Token> {
     });
     return tokens;
 }
-
