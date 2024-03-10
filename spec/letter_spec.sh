@@ -61,16 +61,16 @@ Describe 'letters'
   End
 
   It 'can be rot13-ciphered one character per line'
-    echo "'H' - - - - - - - - - - - - - STDOUT;" >> $program
-    echo "'E' - - - - - - - - - - - - - STDOUT;" >> $program
-    echo "'L' - - - - - - - - - - - - - STDOUT;" >> $program
-    echo "'L' - - - - - - - - - - - - - STDOUT;" >> $program
-    echo "'O' - - - - - - - - - - - - - STDOUT;" >> $program
-    echo "'w' - - - - - - - - - - - - - STDOUT;" >> $program
-    echo "'o' - - - - - - - - - - - - - STDOUT;" >> $program
-    echo "'r' - - - - - - - - - - - - - STDOUT;" >> $program
-    echo "'l' - - - - - - - - - - - - - STDOUT;" >> $program
-    echo "'d' - - - - - - - - - - - - - STDOUT;" >> $program
+    echo "'H' {13} - STDOUT;" >> $program
+    echo "'E' {13} - STDOUT;" >> $program
+    echo "'L' {13} - STDOUT;" >> $program
+    echo "'L' {13} - STDOUT;" >> $program
+    echo "'O' {13} - STDOUT;" >> $program
+    echo "'w' {13} - STDOUT;" >> $program
+    echo "'o' {13} - STDOUT;" >> $program
+    echo "'r' {13} - STDOUT;" >> $program
+    echo "'l' {13} - STDOUT;" >> $program
+    echo "'d' {13} - STDOUT;" >> $program
 
     When call $U_INTERPRETER $program
     The status should be success
