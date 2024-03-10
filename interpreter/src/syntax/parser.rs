@@ -80,7 +80,7 @@ impl ProgramParser {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct StatementParser {}
+pub struct StatementParser;
 
 impl SyntaxParser for StatementParser {
     fn parse(
@@ -115,6 +115,14 @@ impl SyntaxParser for StatementParser {
                     let op = SyntaxTree::new(SyntaxTreeKind::UnaryOp, Some(token.clone()));
                     statement.add_child(op);
                 }
+                TokenName::Repeater => match RepeaterParser::new(token.clone()).parse(tokens) {
+                    Err(repeater_errors) => {
+                        repeater_errors.iter().for_each(|e| errors.push(e.clone()));
+                    }
+                    Ok(subtree) => {
+                        statement.add_child(subtree);
+                    }
+                },
                 TokenName::Semicolon => {
                     let end = SyntaxTree::new(SyntaxTreeKind::EndOfLine, None);
                     statement.add_child(end);
@@ -132,6 +140,48 @@ impl SyntaxParser for StatementParser {
         }
         if errors.is_empty() {
             Ok(statement)
+        } else {
+            Err(errors)
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct RepeaterParser {
+    token: Token,
+}
+
+impl RepeaterParser {
+    pub fn new(token: Token) -> Self {
+        return RepeaterParser { token };
+    }
+}
+
+impl SyntaxParser for RepeaterParser {
+    fn parse(
+        &mut self,
+        tokens: &mut Peekable<Iter<'_, Token>>,
+    ) -> Result<SyntaxTree, Vec<SyntaxError>> {
+        let mut subtree =
+            SyntaxTree::new(SyntaxTreeKind::RepeatedUnaryOp, Some(self.token.clone()));
+        let mut errors: Vec<SyntaxError> = Vec::new();
+
+        let operator = tokens
+            .next()
+            .expect("Internal error: RepeaterParser.parse called with an empty token iterator");
+        match operator.name {
+            TokenName::Plus | TokenName::Minus | TokenName::Stdout => {
+                let op = SyntaxTree::new(SyntaxTreeKind::UnaryOp, Some(operator.clone()));
+                subtree.add_child(op);
+            }
+            _ => errors.push(SyntaxError::UnexpectedToken {
+                unexpected: operator.clone(),
+                message: String::from("RepeaterParser: expected UnaryOp"),
+            }),
+        }
+
+        if errors.is_empty() {
+            Ok(subtree)
         } else {
             Err(errors)
         }

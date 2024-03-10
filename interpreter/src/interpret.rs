@@ -176,26 +176,51 @@ fn get_source_value(source_node: &SyntaxTree) -> UValue {
 }
 
 fn apply_operator(input: &UValue, operator: &SyntaxTree) -> UValue {
-    assert!(
-        operator.kind == SyntaxTreeKind::UnaryOp,
-        "SyntaxTree passed to get_source_value must be of type UnaryOp"
-    );
-    match &operator.token {
-        None => panic!("UnaryOp nodes should always have a token: {:?}", &operator),
-        Some(t) => match t.name {
-            TokenName::Plus => {
-                return input + 1;
+    match operator.kind {
+        SyntaxTreeKind::RepeatedUnaryOp => {
+            if operator.children.len() != 1 {
+                panic!(
+                    "RepeatedUnaryOp subtree should have exactly one child: {:?}",
+                    operator
+                );
             }
-            TokenName::Minus => {
-                return input - 1;
+            let repeated_operator = &operator.children[0];
+            let repeat_count: u32 = operator
+                .token
+                .clone()
+                .expect("Internal error: RepeatedUnaryOp node should have a token")
+                .value
+                .expect("Internal error: Repeater token should have a token value")
+                .parse()
+                .expect("Internal error: Failed to parse u32 from repeater token");
+            let mut result = input.clone();
+            for _ in 0..repeat_count {
+                result = apply_operator(&result, &repeated_operator);
             }
-            TokenName::Stdout => {
-                println!("{}", input);
-                return input.clone();
-            }
-            _ => {
-                panic!("Unexpected token in UnaryOp node: {:?}", t);
-            }
-        },
-    };
+            result
+        }
+        SyntaxTreeKind::UnaryOp => {
+            match &operator.token {
+                None => panic!("UnaryOp nodes should always have a token: {:?}", &operator),
+                Some(t) => match t.name {
+                    TokenName::Plus => {
+                        return input + 1;
+                    }
+                    TokenName::Minus => {
+                        return input - 1;
+                    }
+                    TokenName::Stdout => {
+                        println!("{}", input);
+                        return input.clone();
+                    }
+                    _ => {
+                        panic!("Unexpected token in UnaryOp node: {:?}", t);
+                    }
+                },
+            };
+        }
+        _ => {
+            panic!("SyntaxTree passed to get_source_value must be of type UnaryOp");
+        }
+    }
 }

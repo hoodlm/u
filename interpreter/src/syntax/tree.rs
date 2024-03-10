@@ -6,6 +6,7 @@ pub enum SyntaxTreeKind {
     Statement,
     Source,
     UnaryOp,
+    RepeatedUnaryOp,
     EndOfLine,
 }
 
