@@ -170,6 +170,13 @@ impl SyntaxParser for RepeaterParser {
             .next()
             .expect("Internal error: RepeaterParser.parse called with an empty token iterator");
         match operator.name {
+            TokenName::Repeater => {
+                let nested_repeater_result = RepeaterParser::new(operator.clone()).parse(tokens);
+                match nested_repeater_result {
+                    Ok(nested_repeater) => subtree.add_child(nested_repeater),
+                    Err(suberrors) => suberrors.iter().for_each(|e| errors.push(e.clone())),
+                }
+            }
             TokenName::Plus | TokenName::Minus | TokenName::Stdout => {
                 let op = SyntaxTree::new(SyntaxTreeKind::UnaryOp, Some(operator.clone()));
                 subtree.add_child(op);

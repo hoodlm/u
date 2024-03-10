@@ -57,11 +57,55 @@ Describe '{} repeater'
     The first line of stdout should eq '1'
   End
 
+  It 'can be used with one'
+    echo '1 {1} + STDOUT;' >> $program
+    When call $U_INTERPRETER $program
+
+    The status should be success
+    The first line of stdout should eq '2'
+  End
+
   It 'can be used multiple times in one line'
     echo '0 {10} + {6} - STDOUT;' >> $program
     When call $U_INTERPRETER $program
 
     The status should be success
     The first line of stdout should eq '4'
+  End
+
+  It 'can be used to repeat itself'
+    # This is multiplication
+    echo '0 {10} {6} + STDOUT;' >> $program
+    When call $U_INTERPRETER $program
+
+    The status should be success
+    The first line of stdout should eq '60'
+  End
+
+  It 'can be used to repeat itself several times'
+    # This computes 5 factorial !
+    echo '0 {5} {4} {3} {2} {1} + STDOUT;' >> $program
+    When call $U_INTERPRETER $program
+
+    The status should be success
+    The first line of stdout should eq '120'
+  End
+
+  It 'returns a lexer error when used with a negative number'
+    echo '0 {-1} + STDOUT;' >> $program
+    When call $U_INTERPRETER $program
+
+    The status should be failure
+    The first line of stderr should eq 'Lexical analysis failed!'
+  End
+
+  It 'returns a syntax error at the end of a line'
+    echo '0 {1};' >> $program
+    When call $U_INTERPRETER $program
+
+    The status should be failure
+    The first line of stderr should eq 'Syntax analysis failed!'
+    The line 2 of stderr should include 'Unexpected token'
+    The line 2 of stderr should include ';'
   End
 End
