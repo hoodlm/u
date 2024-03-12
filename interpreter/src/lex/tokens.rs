@@ -11,6 +11,7 @@ pub enum TokenName {
     Minus,
     Stdout,
     Repeater,
+    Variable,
     Unknown,
     Semicolon,
 }
@@ -33,6 +34,7 @@ impl Token {
             TokenName::UString,
             TokenName::Plus,
             TokenName::Minus,
+            TokenName::Variable,
             TokenName::Letter,
             TokenName::Semicolon,
             TokenName::Unknown,
@@ -47,6 +49,7 @@ impl Token {
             TokenName::Letter => Regex::new(r"^'[a-z|A-Z]'\s*").unwrap(),
             TokenName::Repeater => Regex::new(r"^\{[0-9]+\}\s*").unwrap(),
             TokenName::UString => Regex::new("^\"[^\"]+\"\\s*").unwrap(),
+            TokenName::Variable => Regex::new(r"^\$[a-z|A-Z|_]+\s*").unwrap(),
             TokenName::Plus => Regex::new(r"^\+\s*").unwrap(),
             TokenName::Minus => Regex::new(r"^-\s*").unwrap(),
             TokenName::Stdout => Regex::new(r"^STDOUT\s*").unwrap(),
@@ -81,6 +84,7 @@ impl Token {
                     .trim_end_matches('\"')
                     .to_string(),
             ),
+            TokenName::Variable => Some(value.trim().to_string()),
             TokenName::Plus => Some(value.to_string()),
             TokenName::Minus => Some(value.to_string()),
             TokenName::Stdout => Some(value.to_string()),

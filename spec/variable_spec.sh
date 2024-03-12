@@ -8,7 +8,7 @@ Describe 'variables'
       # The stdout should eq '5'
       # The status should be success
       The status should be failure
-      The line 1 of stderr should eq 'Lexical analysis failed!'
+      The line 1 of stderr should eq 'Syntax analysis failed!'
     End
 
     It 'can store a value then have operators applied to it'
@@ -18,7 +18,7 @@ Describe 'variables'
       # The stdout should eq '7'
       # The status should be success
       The status should be failure
-      The line 1 of stderr should eq 'Lexical analysis failed!'
+      The line 1 of stderr should eq 'Syntax analysis failed!'
     End
 
     It 'can store a value after operators are applied to it'
@@ -28,7 +28,7 @@ Describe 'variables'
       # The stdout should eq '8'
       # The status should be success
       The status should be failure
-      The line 1 of stderr should eq 'Lexical analysis failed!'
+      The line 1 of stderr should eq 'Syntax analysis failed!'
     End
 
     It 'can store intermediate values during a line'
@@ -45,7 +45,7 @@ Describe 'variables'
       # The line 4 of stdout should eq '8'
       # The status should be success
       The status should be failure
-      The line 1 of stderr should eq 'Lexical analysis failed!'
+      The line 1 of stderr should eq 'Syntax analysis failed!'
     End
   End
 
@@ -57,7 +57,7 @@ Describe 'variables'
       # The stdout should eq 'hello'
       # The status should be success
       The status should be failure
-      The line 1 of stderr should eq 'Lexical analysis failed!'
+      The line 1 of stderr should eq 'Syntax analysis failed!'
     End
   End
 
@@ -69,7 +69,7 @@ Describe 'variables'
       # The stdout should eq '9'
       # The status should be success
       The status should be failure
-      The line 1 of stderr should eq 'Lexical analysis failed!'
+      The line 1 of stderr should eq 'Syntax analysis failed!'
     End
 
     It 'can be SNAKE_CASE'
@@ -79,7 +79,7 @@ Describe 'variables'
       # The stdout should eq '9'
       # The status should be success
       The status should be failure
-      The line 1 of stderr should eq 'Lexical analysis failed!'
+      The line 1 of stderr should eq 'Syntax analysis failed!'
     End
 
     It 'can be camelCase'
@@ -89,7 +89,7 @@ Describe 'variables'
       # The stdout should eq '9'
       # The status should be success
       The status should be failure
-      The line 1 of stderr should eq 'Lexical analysis failed!'
+      The line 1 of stderr should eq 'Syntax analysis failed!'
     End
   End
 End
