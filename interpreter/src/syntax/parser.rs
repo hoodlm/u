@@ -94,7 +94,7 @@ impl SyntaxParser for StatementParser {
             .next()
             .expect("Internal error: SyntaxParser.parse called with an empty token iterator");
         match source_token.name {
-            TokenName::Letter | TokenName::Integer | TokenName::Float | TokenName::UString => {
+            TokenName::Letter | TokenName::Integer | TokenName::Float | TokenName::UString | TokenName::Variable => {
                 let source = SyntaxTree::new(SyntaxTreeKind::Source, Some(source_token.clone()));
                 statement.add_child(source);
             }
@@ -111,7 +111,7 @@ impl SyntaxParser for StatementParser {
         let mut line_completed = false;
         while let Some(token) = tokens.next() {
             match token.name {
-                TokenName::Plus | TokenName::Minus | TokenName::Stdout => {
+                TokenName::Plus | TokenName::Minus | TokenName::Stdout | TokenName::Variable => {
                     let op = SyntaxTree::new(SyntaxTreeKind::UnaryOp, Some(token.clone()));
                     statement.add_child(op);
                 }

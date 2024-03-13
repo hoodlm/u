@@ -1,6 +1,7 @@
 use crate::lex::tokens::TokenName;
 use crate::syntax::tree::{SyntaxTree, SyntaxTreeKind};
 use std::char::from_digit;
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Sub};
 
@@ -73,14 +74,18 @@ fn char_add(c: &char, other: i32) -> char {
     return result_char;
 }
 
-pub struct UInterpreter {}
+pub struct UInterpreter {
+    variable_table: HashMap<String, UValue>,
+}
 
 impl UInterpreter {
     pub fn new() -> Self {
-        UInterpreter {}
+        UInterpreter {
+            variable_table: HashMap::new(),
+        }
     }
 
-    pub fn execute(&self, program: &SyntaxTree) {
+    pub fn execute(&mut self, program: &SyntaxTree) {
         assert!(
             program.kind == SyntaxTreeKind::ProgramStart,
             "program SyntaxTree passed to execute must be of type ProgramStart"
@@ -100,7 +105,7 @@ impl UInterpreter {
         });
     }
 
-    pub fn exec_statement(&self, statement: &SyntaxTree) {
+    pub fn exec_statement(&mut self, statement: &SyntaxTree) {
         self.prevalidate_statement(&statement);
         let source_value = self.get_source_value(&statement.children[0]);
 
@@ -165,6 +170,14 @@ impl UInterpreter {
                     let val: String = t.value.to_string();
                     return UValue::UString(val);
                 }
+                TokenName::Variable => {
+                    let val = self.variable_table.get(&t.value);
+                    if val.is_none() {
+                        panic!("Internal error: variable {:?} not found in table (this should have been caught sooner as a syntax error!",
+                        t);
+                    }
+                    return val.unwrap().clone();
+                }
                 _ => {
                     panic!("Unexpected token in Source node: {:?}", t);
                 }
@@ -172,7 +185,7 @@ impl UInterpreter {
         };
     }
 
-    fn apply_operator(&self, input: &UValue, operator: &SyntaxTree) -> UValue {
+    fn apply_operator(&mut self, input: &UValue, operator: &SyntaxTree) -> UValue {
         match operator.kind {
             SyntaxTreeKind::RepeatedUnaryOp => {
                 if operator.children.len() != 1 {
@@ -198,7 +211,7 @@ impl UInterpreter {
             SyntaxTreeKind::UnaryOp => {
                 match &operator.token {
                     None => panic!("UnaryOp nodes should always have a token: {:?}", &operator),
-                    Some(t) => match t.name {
+                    Some(token) => match token.name {
                         TokenName::Plus => {
                             return input + 1;
                         }
@@ -209,8 +222,12 @@ impl UInterpreter {
                             println!("{}", input);
                             return input.clone();
                         }
+                        TokenName::Variable => {
+                            self.variable_table.insert(token.value.clone(), input.clone());
+                            return input.clone();
+                        }
                         _ => {
-                            panic!("Unexpected token in UnaryOp node: {:?}", t);
+                            panic!("Unexpected token in UnaryOp node: {:?}", token);
                         }
                     },
                 };
