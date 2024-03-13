@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::iter::Peekable;
@@ -9,6 +10,8 @@ use crate::syntax::tree::{SyntaxTree, SyntaxTreeKind};
 #[derive(Debug, Clone)]
 pub enum SyntaxError {
     UnexpectedToken { unexpected: Token, message: String },
+    UndeclaredVariable { var_name: String },
+    AssignedVariableTwice { var_name: String },
     LineIncomplete,
 }
 
@@ -24,6 +27,12 @@ impl Display for SyntaxError {
             SyntaxError::LineIncomplete => {
                 write!(f, "Expected more tokens before end of line")
             }
+            SyntaxError::UndeclaredVariable { var_name } => {
+                write!(f, "Variable not declared: {}", var_name)
+            }
+            SyntaxError::AssignedVariableTwice { var_name } => {
+                write!(f, "Cannot assign to this variable twice: {}", var_name)
+            }
         }
     }
 }
@@ -32,6 +41,7 @@ impl Error for SyntaxError {}
 pub trait SyntaxParser {
     fn parse(
         &mut self,
+        variables_in_scope: &mut HashSet<String>,
         tokens: &mut Peekable<Iter<'_, Token>>,
     ) -> Result<SyntaxTree, Vec<SyntaxError>>;
 }
@@ -42,6 +52,7 @@ pub struct ProgramParser;
 impl SyntaxParser for ProgramParser {
     fn parse(
         &mut self,
+        variables_in_scope: &mut HashSet<String>,
         tokens: &mut Peekable<Iter<'_, Token>>,
     ) -> Result<SyntaxTree, Vec<SyntaxError>> {
         let mut tree = SyntaxTree::root();
@@ -56,7 +67,7 @@ impl SyntaxParser for ProgramParser {
                 break;
             }
             let mut sp = StatementParser {};
-            let result = sp.parse(tokens);
+            let result = sp.parse(variables_in_scope, tokens);
             match result {
                 Ok(subtree) => tree.add_child(subtree),
                 Err(errors) => {
@@ -75,7 +86,7 @@ impl SyntaxParser for ProgramParser {
 
 impl ProgramParser {
     pub fn new() -> Self {
-        return ProgramParser {};
+        ProgramParser {}
     }
 }
 
@@ -85,6 +96,7 @@ pub struct StatementParser;
 impl SyntaxParser for StatementParser {
     fn parse(
         &mut self,
+        variables_in_scope: &mut HashSet<String>,
         tokens: &mut Peekable<Iter<'_, Token>>,
     ) -> Result<SyntaxTree, Vec<SyntaxError>> {
         let mut statement = SyntaxTree::new(SyntaxTreeKind::Statement, None);
@@ -94,9 +106,19 @@ impl SyntaxParser for StatementParser {
             .next()
             .expect("Internal error: SyntaxParser.parse called with an empty token iterator");
         match source_token.name {
-            TokenName::Letter | TokenName::Integer | TokenName::Float | TokenName::UString | TokenName::Variable => {
+            TokenName::Letter | TokenName::Integer | TokenName::Float | TokenName::UString => {
                 let source = SyntaxTree::new(SyntaxTreeKind::Source, Some(source_token.clone()));
                 statement.add_child(source);
+            }
+            TokenName::Variable => {
+                if variables_in_scope.contains(&source_token.value) {
+                    let source = SyntaxTree::new(SyntaxTreeKind::Source, Some(source_token.clone()));
+                    statement.add_child(source);
+                } else {
+                    errors.push(
+                        SyntaxError::UndeclaredVariable { var_name: source_token.value.clone() }
+                    )
+                }
             }
             _ => {
                 errors.push(
@@ -111,11 +133,22 @@ impl SyntaxParser for StatementParser {
         let mut line_completed = false;
         while let Some(token) = tokens.next() {
             match token.name {
-                TokenName::Plus | TokenName::Minus | TokenName::Stdout | TokenName::Variable => {
+                TokenName::Plus | TokenName::Minus | TokenName::Stdout => {
                     let op = SyntaxTree::new(SyntaxTreeKind::UnaryOp, Some(token.clone()));
                     statement.add_child(op);
                 }
-                TokenName::Repeater => match RepeaterParser::new(token.clone()).parse(tokens) {
+                TokenName::Variable => {
+                    if variables_in_scope.contains(&token.value) {
+                        errors.push(
+                            SyntaxError::AssignedVariableTwice { var_name: token.value.to_string() }
+                        )
+                    } else {
+                        variables_in_scope.insert(token.value.to_string());
+                        let op = SyntaxTree::new(SyntaxTreeKind::UnaryOp, Some(token.clone()));
+                        statement.add_child(op);
+                    }
+                }
+                TokenName::Repeater => match RepeaterParser::new(token.clone()).parse(variables_in_scope, tokens) {
                     Err(repeater_errors) => {
                         repeater_errors.iter().for_each(|e| errors.push(e.clone()));
                     }
@@ -160,6 +193,7 @@ impl RepeaterParser {
 impl SyntaxParser for RepeaterParser {
     fn parse(
         &mut self,
+        variables_in_scope: &mut HashSet<String>,
         tokens: &mut Peekable<Iter<'_, Token>>,
     ) -> Result<SyntaxTree, Vec<SyntaxError>> {
         let mut subtree =
@@ -171,7 +205,7 @@ impl SyntaxParser for RepeaterParser {
             .expect("Internal error: RepeaterParser.parse called with an empty token iterator");
         match operator.name {
             TokenName::Repeater => {
-                let nested_repeater_result = RepeaterParser::new(operator.clone()).parse(tokens);
+                let nested_repeater_result = RepeaterParser::new(operator.clone()).parse(variables_in_scope, tokens);
                 match nested_repeater_result {
                     Ok(nested_repeater) => subtree.add_child(nested_repeater),
                     Err(suberrors) => suberrors.iter().for_each(|e| errors.push(e.clone())),

@@ -173,7 +173,7 @@ impl UInterpreter {
                 TokenName::Variable => {
                     let val = self.variable_table.get(&t.value);
                     if val.is_none() {
-                        panic!("Internal error: variable {:?} not found in table (this should have been caught sooner as a syntax error!",
+                        panic!("Internal error: variable [{:?}] not found in table (this should have been caught sooner as a syntax error!)",
                         t);
                     }
                     return val.unwrap().clone();
@@ -223,7 +223,11 @@ impl UInterpreter {
                             return input.clone();
                         }
                         TokenName::Variable => {
-                            self.variable_table.insert(token.value.clone(), input.clone());
+                            let key = token.value.clone();
+                            if self.variable_table.contains_key(&key) {
+                                panic!("Trying to re-assign to already-assigned variable [{:?}] (this should have been caught sooner as a syntax error!)", token)
+                            }
+                            self.variable_table.insert(key, input.clone());
                             return input.clone();
                         }
                         _ => {

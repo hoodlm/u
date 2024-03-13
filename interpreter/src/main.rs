@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use std::collections::HashSet;
 use std::process::ExitCode;
 
 use u::interpret::{UInterpreter};
@@ -22,7 +23,7 @@ fn main() -> ExitCode {
         }
     };
     let mut token_iter = tokens.iter().peekable();
-    let syntax_result = ProgramParser::new().parse(&mut token_iter);
+    let syntax_result = ProgramParser::new().parse(&mut HashSet::new(), &mut token_iter);
     let ast = match syntax_result {
         Ok(ast) => ast,
         Err(errors) => {
