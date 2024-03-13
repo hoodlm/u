@@ -2,7 +2,7 @@ use std::env;
 use std::fs;
 use std::process::ExitCode;
 
-use u::interpret::execute;
+use u::interpret::{UInterpreter};
 use u::lex::lex_analysis;
 use u::syntax::parser::{ProgramParser, SyntaxParser};
 
@@ -33,7 +33,7 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    execute(&ast);
+    UInterpreter::new().execute(&ast);
     return ExitCode::SUCCESS;
 }
 
