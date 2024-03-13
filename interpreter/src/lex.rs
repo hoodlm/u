@@ -26,10 +26,7 @@ pub fn lex_analysis(input: &String) -> Result<Vec<Token>, Vec<LexError>> {
         .iter()
         .filter(|token| token.name == TokenName::Unknown)
         .map(|token| LexError::UnknownToken {
-            value: token
-                .value
-                .clone()
-                .expect("Internal error: Unknown token that does not have a value"),
+            value: token.value.clone()
         })
         .collect();
 

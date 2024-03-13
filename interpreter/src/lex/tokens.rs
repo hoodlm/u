@@ -19,7 +19,7 @@ pub enum TokenName {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Token {
     pub name: TokenName,
-    pub value: Option<String>,
+    pub value: String,
 }
 
 impl Token {
@@ -58,38 +58,32 @@ impl Token {
         }
     }
 
-    pub fn pack_value(token_name: &TokenName, value: &str) -> Option<String> {
+    pub fn pack_value(token_name: &TokenName, value: &str) -> String {
         match token_name {
-            TokenName::Whitespace => Some(value.to_string()),
-            TokenName::Float => Some(value.trim().to_string()),
-            TokenName::Integer => Some(value.trim().to_string()),
-            TokenName::Letter => Some(
-                value
+            TokenName::Whitespace => value.to_string(),
+            TokenName::Float => value.trim().to_string(),
+            TokenName::Integer => value.trim().to_string(),
+            TokenName::Letter => value
                     .trim()
                     .trim_start_matches('\'')
                     .trim_end_matches('\'')
                     .to_string(),
-            ),
-            TokenName::Repeater => Some(
-                value
+            TokenName::Repeater => value
                     .trim()
                     .trim_start_matches('{')
                     .trim_end_matches('}')
                     .to_string(),
-            ),
-            TokenName::UString => Some(
-                value
+            TokenName::UString => value
                     .trim()
                     .trim_start_matches('\"')
                     .trim_end_matches('\"')
                     .to_string(),
-            ),
-            TokenName::Variable => Some(value.trim().to_string()),
-            TokenName::Plus => Some(value.to_string()),
-            TokenName::Minus => Some(value.to_string()),
-            TokenName::Stdout => Some(value.to_string()),
-            TokenName::Semicolon => Some(value.to_string()),
-            TokenName::Unknown => Some(value.to_string()),
+            TokenName::Variable => value.trim().to_string(),
+            TokenName::Plus => value.to_string(),
+            TokenName::Minus => value.to_string(),
+            TokenName::Stdout => value.to_string(),
+            TokenName::Semicolon => value.to_string(),
+            TokenName::Unknown => value.to_string(),
         }
     }
 }

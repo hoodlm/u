@@ -145,8 +145,6 @@ fn get_source_value(source_node: &SyntaxTree) -> UValue {
             TokenName::Integer => {
                 let val: i64 = t
                     .value
-                    .clone()
-                    .unwrap()
                     .parse()
                     .expect("Malformed integer value");
                 return UValue::Integer(val);
@@ -154,18 +152,16 @@ fn get_source_value(source_node: &SyntaxTree) -> UValue {
             TokenName::Float => {
                 let val: f64 = t
                     .value
-                    .clone()
-                    .unwrap()
                     .parse()
                     .expect("Malformed float value");
                 return UValue::Float(val);
             }
             TokenName::Letter => {
-                let val: char = t.value.clone().unwrap().chars().collect::<Vec<char>>()[0].clone();
+                let val: char = t.value.chars().collect::<Vec<char>>()[0].clone();
                 return UValue::Letter(val);
             }
             TokenName::UString => {
-                let val: String = t.value.clone().unwrap().to_string();
+                let val: String = t.value.to_string();
                 return UValue::UString(val);
             }
             _ => {
@@ -190,7 +186,6 @@ fn apply_operator(input: &UValue, operator: &SyntaxTree) -> UValue {
                 .clone()
                 .expect("Internal error: RepeatedUnaryOp node should have a token")
                 .value
-                .expect("Internal error: Repeater token should have a token value")
                 .parse()
                 .expect("Internal error: Failed to parse u32 from repeater token");
             let mut result = input.clone();
