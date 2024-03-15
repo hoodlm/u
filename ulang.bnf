@@ -1,18 +1,17 @@
-<line> ::= <statement> | <function_decl>
+# This is not a formal BNF spec
 
-<function_decl> ::= "fn" <function_label>":" <unary_chain>;
-<statement> ::= <source> <unary_chain> <sink>;
+<line> ::= <statement>
+
+<statement> ::= <source> <unary_chain>;
 
 <source> ::= <variable_label> | <literal>
-<sink> ::= <variable_label> | "STDOUT"
 
 <unary_chain> ::= <unary_op> | <unary_op> <unary_chain>
 
 <unary_invoke> ::= <unary_op> | <repeater> <unary_op>
 <repeater> ::= {int}
-<unary_op> ::= + | -
+<unary_op> ::= + | - | STDOUT | <variable_label>
 
-<literal> ::= int
-<variable_label> ::= /(:alnum:|:punct:)+/
-<function_label> ::= /(:alnum:|:punct:)+/
+<literal> ::= int, float, 'letter', "string"
+<variable_label> ::= \$(a-z|A-Z|_)+
 
