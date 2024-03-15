@@ -1,5 +1,3 @@
-#! /bin/bash
-
 spec_helper_configure() {
     ready_temp_dir
     set_u_binary
@@ -17,19 +15,12 @@ set_u_binary() {
 }
 
 find_u() {
-    # Prefer release binary, if we can find it
-    find_release_binary_result=$(find . -wholename "*/release/u" -type f | head -n1)
-
-    if [ -e "$find_release_binary_result" ]; then
-        printf "%s" "$find_release_binary_result"
-    else
-        find_result=$(find . -name "u" -type f | head -n1)
-        if [ -z "$find_result" ]; then
-            echo "Could not find 'u' executable"
-            exit 1
-        fi
-        printf "%s" "$find_result"
+    find_result=$(find . -name "u" -type f | head -n1)
+    if [ -z "$find_result" ]; then
+        echo "Could not find 'u' executable"
+        exit 1
     fi
+    printf "%s" "$find_result"
 }
 
 ready_temp_dir() {
@@ -37,6 +28,6 @@ ready_temp_dir() {
 }
 
 setup_tmp_program_file() {
-    program=$(mktemp --tmpdir="$program_dir" --suffix=.u)
+    program=$(mktemp --tmpdir=$program_dir --suffix=.u)
 }
 
