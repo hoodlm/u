@@ -34,7 +34,7 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    UInterpreter::new().execute(&ast);
+    let _ = UInterpreter::new().execute(&ast);
     return ExitCode::SUCCESS;
 }
 

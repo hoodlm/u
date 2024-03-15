@@ -6,7 +6,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::{Add, Sub};
 
 #[derive(Debug, Clone)]
-enum UValue {
+pub enum UValue {
     Integer(i64),
     Float(f64),
     Letter(char),
@@ -85,15 +85,16 @@ impl UInterpreter {
         }
     }
 
-    pub fn execute(&mut self, program: &SyntaxTree) {
+    pub fn execute(&mut self, program: &SyntaxTree) -> Result<UValue, ()> {
         assert!(
             program.kind == SyntaxTreeKind::ProgramStart,
             "program SyntaxTree passed to execute must be of type ProgramStart"
         );
 
+        let mut result = None;
         program.children.iter().for_each(|line| match &line.kind {
             SyntaxTreeKind::Statement => {
-                self.exec_statement(&line);
+                result = Some(self.exec_statement(&line));
             }
             other => {
                 let msg = format!(
@@ -103,9 +104,10 @@ impl UInterpreter {
                 panic!("{}", msg);
             }
         });
+        return Ok(result.unwrap()?);
     }
 
-    pub fn exec_statement(&mut self, statement: &SyntaxTree) {
+    fn exec_statement(&mut self, statement: &SyntaxTree) -> Result<UValue, ()> {
         self.prevalidate_statement(&statement);
         let source_value = self.get_source_value(&statement.children[0]);
 
@@ -118,6 +120,7 @@ impl UInterpreter {
                 result = self.apply_operator(&result, item);
             }
         });
+        Ok(result)
     }
 
     fn prevalidate_statement(&self, statement: &SyntaxTree) {
