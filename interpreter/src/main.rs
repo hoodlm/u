@@ -4,14 +4,14 @@ use std::collections::HashSet;
 use std::process::ExitCode;
 
 use u::interpret::{UInterpreter};
-use u::lex::lex_analysis;
+use u::lex::LexAnalyzer;
 use u::syntax::parser::{ProgramParser, SyntaxParser};
 
 fn main() -> ExitCode {
     let filename = infile_from_args();
     let input = fs::read_to_string(&filename).unwrap();
 
-    let lex_result = lex_analysis(&input);
+    let lex_result = LexAnalyzer::new().lex_analysis(&input);
     let tokens = match lex_result {
         Ok(tokens) => tokens,
         Err(errors) => {
