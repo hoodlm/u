@@ -1,22 +1,19 @@
-use std::io;
-use std::io::BufRead;
-use std::io::Write;
 use std::collections::HashSet;
 
 use u::interpret::{UInterpreter, UValue};
 use u::lex::lex_analysis;
 use u::syntax::parser::{ProgramParser, SyntaxParser};
 
-fn main() -> Result<(), std::io::Error> {
+fn main() {
     banner();
 
-    let stdin = io::stdin();
+    let mut rl = rustyline::DefaultEditor::new().unwrap();
     let mut variables = HashSet::new();
     let mut syntax_analyzer = ProgramParser::new();
     let mut interpreter = UInterpreter::new();
 
     loop {
-        let program = read(&stdin)?;
+        let program = rl.readline("> ").unwrap();
         if program.trim() == "exit" {
             break;
         }
@@ -32,20 +29,11 @@ fn main() -> Result<(), std::io::Error> {
             }
         }
     }
-    Ok(())
 }
 
 fn banner() {
     println!("u!");
     println!("type 'exit' to close");
-}
-
-fn read(stdin: &io::Stdin) -> Result<String, std::io::Error> {
-    print!("> ");
-    let _ = io::stdout().flush();
-    let mut input_buffer = String::new();
-    stdin.lock().read_line(&mut input_buffer)?;
-    Ok(input_buffer)
 }
 
 fn eval(
