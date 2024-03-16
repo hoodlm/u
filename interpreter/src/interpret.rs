@@ -85,7 +85,7 @@ impl UInterpreter {
         }
     }
 
-    pub fn execute(&mut self, program: &SyntaxTree) -> Result<UValue, ()> {
+    pub fn execute(&mut self, program: &SyntaxTree) -> Result<Option<UValue>, ()> {
         assert!(
             program.kind == SyntaxTreeKind::ProgramStart,
             "program SyntaxTree passed to execute must be of type ProgramStart"
@@ -104,10 +104,10 @@ impl UInterpreter {
                 panic!("{}", msg);
             }
         });
-        return Ok(result.unwrap()?);
+        return Ok(result);
     }
 
-    fn exec_statement(&mut self, statement: &SyntaxTree) -> Result<UValue, ()> {
+    fn exec_statement(&mut self, statement: &SyntaxTree) -> UValue {
         self.prevalidate_statement(&statement);
         let source_value = self.get_source_value(&statement.children[0]);
 
@@ -120,7 +120,7 @@ impl UInterpreter {
                 result = self.apply_operator(&result, item);
             }
         });
-        Ok(result)
+        result
     }
 
     fn prevalidate_statement(&self, statement: &SyntaxTree) {

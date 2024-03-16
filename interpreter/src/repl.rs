@@ -22,8 +22,10 @@ fn main() -> Result<(), std::io::Error> {
         }
         let result = eval(program, &mut syntax_analyzer, &mut variables, &mut interpreter);
         match result {
-            Ok(r) => {
-                println!("{}", r)
+            Ok(output) => {
+                if let Some(output) = output {
+                    println!("{}", output)
+                }
             }
             Err(err) => {
                 println!("{:?}", err)
@@ -46,7 +48,12 @@ fn read(stdin: &io::Stdin) -> Result<String, std::io::Error> {
     Ok(input_buffer)
 }
 
-fn eval(input: String, syntax_analyzer: &mut ProgramParser, variables: &mut HashSet<String>, interpreter: &mut UInterpreter) -> Result<UValue, ()> {
+fn eval(
+    input: String,
+    syntax_analyzer: &mut ProgramParser,
+    variables: &mut HashSet<String>,
+    interpreter: &mut UInterpreter
+    ) -> Result<Option<UValue>, ()> {
     let lex_result = lex_analysis(&input);
     let tokens = match lex_result {
         Ok(tokens) => tokens,
