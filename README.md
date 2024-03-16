@@ -10,7 +10,7 @@ x++
 y--
 ```
 
-In `u`, the increment and decrement operators are represented with a single plus `+` or a single `-`:
+In `u`, the increment and decrement operators are a single plus `+` or a single `-`:
 
 ```
 > 1 +;
@@ -19,15 +19,15 @@ In `u`, the increment and decrement operators are represented with a single plus
 98
 ```
 
-A line of `u` starts with a value (either a literal or a variable) followed by a chain of operators, and
-is terminated by a semicolon. This program starts with the literal 100, increments it twice, then decrements it once:
+A `u` statement starts with a value (either a literal or a variable) followed by a chain of operators.
+Each line is terminated by a semicolon. This example starts with the literal 100, increments it twice, then decrements it once:
 
 ```
 > 100 + + -;
 101
 ```
 
-You can insert the STDOUT 'pseudo-operator' to observe the value as it's changed by each operator:
+You can insert the STDOUT 'pseudo-operator' to observe the value as it is changed by each operator:
 
 ```
 > 100 STDOUT + STDOUT + STDOUT -;
@@ -63,7 +63,7 @@ cargo uninstall u
 | Char         | 'a'           | next letter in the alphabet | previous letter in the alphabet |
 | String       | "hello world" | increments each letter      | decrements each letter          |
 
-Operations on floats are subject to system-dependent floating point rounding; e.g.
+Operations on floats are subject to system-dependent floating point precision; e.g.
 
 ```
 > 1.23 -;
@@ -207,7 +207,7 @@ With more than two factors, too. Here's eight factorial:
 
 `u` comes with a language integration test suite in the [spec](./spec) directory.
 
-The language integration tests are built with [shellspec](shellspec.info) and can be invoked
+The language integration tests are built with [shellspec](https://shellspec.info) and can be invoked
 with the plain `shellspec` command.
 
 They execute directly against the `u` binary, so you need to build the interpreter (e.g.
@@ -222,12 +222,12 @@ Yes.
 ## Can I write real software with `u`?
 
 Yes, you can use `u` to implement any program that can be expressed as a
-unary operator over a finite set. If you find unary operators limiting, consider
+unary operation over a finite set. If you find unary operators limiting, consider
 that a flaw with the underlying laws of universe, not a flaw with `u`.
 
 ## Is it Turing complete?
 
-Not by itself. `u` does not support boolean combinatorial logic (like AND/OR) which are a prerequisite to implement even simple automata.
+Not by itself. `u` does not support boolean combinatorial logic (like AND/OR) which is a prerequisite to implement even simple automata.
 
 ## Is it done?
 
