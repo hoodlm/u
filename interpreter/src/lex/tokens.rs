@@ -61,8 +61,8 @@ impl TokenMatcher {
     pub fn new() -> Self {
         TokenMatcher {
             whitespace_regex: Regex::new(r"^\s+").unwrap(),
-            float_regex: Regex::new(r"^-?[0-9]+\.[0-9]+\s+").unwrap(),
-            integer_regex: Regex::new(r"^-?[0-9]+\s+").unwrap(),
+            float_regex: Regex::new(r"^-?[0-9]+\.[0-9]+\s*").unwrap(),
+            integer_regex: Regex::new(r"^-?[0-9]+\s*").unwrap(),
             letter_regex: Regex::new(r"^'[a-z|A-Z]'\s*").unwrap(),
             repeater_regex: Regex::new(r"^\{[0-9]+\}\s*").unwrap(),
             string_regex: Regex::new("^\"[^\"]+\"\\s*").unwrap(),
